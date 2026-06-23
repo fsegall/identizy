@@ -1,5 +1,4 @@
 #![no_std]
-extern crate alloc;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // AgeVerifier — Soroban BN254 Groth16 verifier with Poseidon commitment

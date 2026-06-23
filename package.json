@@ -1,5 +1,6 @@
 {
   "devDependencies": {
+    "@stellar/stellar-sdk": "^16.0.1",
     "snarkjs": "^0.7.6"
   }
 }

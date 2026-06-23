@@ -31,14 +31,15 @@ The system follows the **W3C Verifiable Credentials** trust model:
 - **Circuit compiled:** `circuits/age_verifier/age_verifier.circom` → 305 R1CS constraints, WASM + zkey generated
 - **Real proof verified:** `birthDate=2000-01-01`, `minAge=18` → `isOldEnough=true`
 - **Contract tests: 3/3 passing** — `cargo test -p age-verifier`
+- **Deployed to Stellar testnet** — Contract ID: `CA7ZALWIDPVDBYSZXMO4WOM4INCWD7UUAZ3XJEQICWGY6H2JDLGGDKEO`
+- **Contract initialized** — real VK + Issuer Ed25519 pubkey uploaded on-chain
 - **Dev environment installed:** Rust 1.89, Circom 2.1.9, Stellar CLI 27.0, snarkjs 0.7.6
 
 ### 🚧 Next Steps
-1. Deploy contract to Stellar testnet (`stellar contract deploy`)
-2. Fund testnet account via Friendbot
-3. Initialize contract with real VK + Issuer pubkey
-4. Connect frontend (Freighter wallet + proof submission)
-5. Record demo video
+1. Frontend: Freighter wallet connection via Stellar Wallets Kit
+2. Frontend: client-side proof generation → submit to testnet contract
+3. End-to-end demo: browser proof → on-chain verification → credential issued
+4. Record 2–3 min demo video for hackathon submission
 
 ---
 

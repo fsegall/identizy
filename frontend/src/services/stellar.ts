@@ -1,183 +1,124 @@
 /**
- * stellar.ts — Soroban contract interaction for the AgeVerifier.
+ * stellar.ts — Soroban contract interaction for AgeVerifier.
  *
- * Calls AgeVerifier.verify() on Stellar testnet/mainnet.
- * Uses @stellar/stellar-sdk and @creit.tech/stellar-wallets-kit for signing.
- *
- * Docs:
- *   SDK: https://developers.stellar.org/docs/tools/sdks
- *   Wallets Kit: https://stellarwalletskit.dev/
+ * Calls AgeVerifier.verify() on Stellar testnet.
+ * Uses @stellar/stellar-sdk v13 (SorobanRpc namespace).
  */
 
-import {
-  Contract,
-  Networks,
-  SorobanRpc,
-  TransactionBuilder,
-  XdrLargeInt,
-  nativeToScVal,
-  xdr,
-} from "@stellar/stellar-sdk";
-import type { SorobanProof } from "./zkProof";
+import { Contract, Networks, TransactionBuilder, BASE_FEE, xdr } from "@stellar/stellar-sdk";
+import * as SorobanRpc from "@stellar/stellar-sdk/rpc";
+import type { AgeProofResult } from "./zkProof";
 
-// ────────────────────────────────────────────────────────────
-// Config — override via env vars at build time
-// ────────────────────────────────────────────────────────────
-
-const NETWORK = (import.meta.env.VITE_STELLAR_NETWORK ?? "testnet") as
-  | "testnet"
-  | "mainnet";
-
-const RPC_URL =
-  import.meta.env.VITE_STELLAR_RPC_URL ??
-  (NETWORK === "mainnet"
-    ? "https://mainnet.sorobanrpc.com"
-    : "https://soroban-testnet.stellar.org");
-
+const NETWORK = (import.meta.env.VITE_STELLAR_NETWORK ?? "testnet") as "testnet" | "mainnet";
+const RPC_URL = import.meta.env.VITE_STELLAR_RPC_URL ?? "https://soroban-testnet.stellar.org";
 const CONTRACT_ID = import.meta.env.VITE_AGE_VERIFIER_CONTRACT_ID ?? "";
+const NETWORK_PASSPHRASE = NETWORK === "mainnet" ? Networks.PUBLIC : Networks.TESTNET;
 
-const NETWORK_PASSPHRASE =
-  NETWORK === "mainnet" ? Networks.PUBLIC : Networks.TESTNET;
+// ── XDR encoding ─────────────────────────────────────────────────────────────
 
-// ────────────────────────────────────────────────────────────
-// Helpers
-// ────────────────────────────────────────────────────────────
-
-function hexToBytes(hex: string): Uint8Array {
+function hexToScBytes(hex: string): xdr.ScVal {
   const h = hex.startsWith("0x") ? hex.slice(2) : hex;
-  const bytes = new Uint8Array(h.length / 2);
-  for (let i = 0; i < bytes.length; i++) {
-    bytes[i] = parseInt(h.slice(i * 2, i * 2 + 2), 16);
-  }
-  return bytes;
+  return xdr.ScVal.scvBytes(Buffer.from(h, "hex"));
 }
 
-/** Build the Soroban ScVal for a Groth16Proof contracttype */
-function proofToScVal(proof: SorobanProof): xdr.ScVal {
+function buildProofScVal(result: AgeProofResult): xdr.ScVal {
   return xdr.ScVal.scvMap([
-    new xdr.ScMapEntry({
-      key: xdr.ScVal.scvSymbol("a"),
-      val: nativeToScVal(hexToBytes(proof.a), { type: "bytes" }),
-    }),
-    new xdr.ScMapEntry({
-      key: xdr.ScVal.scvSymbol("b"),
-      val: nativeToScVal(hexToBytes(proof.b), { type: "bytes" }),
-    }),
-    new xdr.ScMapEntry({
-      key: xdr.ScVal.scvSymbol("c"),
-      val: nativeToScVal(hexToBytes(proof.c), { type: "bytes" }),
-    }),
+    new xdr.ScMapEntry({ key: xdr.ScVal.scvSymbol("a"), val: hexToScBytes(result.proof.a) }),
+    new xdr.ScMapEntry({ key: xdr.ScVal.scvSymbol("b"), val: hexToScBytes(result.proof.b) }),
+    new xdr.ScMapEntry({ key: xdr.ScVal.scvSymbol("c"), val: hexToScBytes(result.proof.c) }),
   ]);
 }
 
-/** Build a 32-byte Fr scalar from a hex string */
-function hexToFr(hex: string): xdr.ScVal {
-  return nativeToScVal(hexToBytes(hex.startsWith("0x") ? hex : "0x" + hex), {
-    type: "bytes",
-  });
+function buildPubInputsScVal(result: AgeProofResult): xdr.ScVal {
+  // Vec<Fr> — 3 elements: [isOldEnough, commitment, addressHash]
+  return xdr.ScVal.scvVec([
+    hexToScBytes(result.sigIsOldEnough),
+    hexToScBytes(result.commitment),
+    hexToScBytes(result.addressHash),
+  ]);
 }
 
-/** Derive a simple 32-byte nullifier from the caller address + proof */
-function deriveNullifier(address: string, proofHex: string): Uint8Array {
-  // Simple deterministic nullifier: first 32 bytes of SHA-256(address + proof.a)
-  // In production, use Poseidon(address, nonce) for better privacy.
-  const input = new TextEncoder().encode(address + proofHex.slice(2, 66));
-  return crypto.subtle
-    .digest("SHA-256", input)
-    .then(() => new Uint8Array(32)) as unknown as Uint8Array;
-}
+// ── Main ─────────────────────────────────────────────────────────────────────
 
-// ────────────────────────────────────────────────────────────
-// Main export
-// ────────────────────────────────────────────────────────────
-
-export interface VerifyOnChainParams {
-  /** Caller's Stellar address (G...) */
-  callerAddress: string;
-  /** Formatted proof from zkProof.generateAgeProof() */
-  proof: SorobanProof;
-  /** Public signal hex from zkProof.generateAgeProof() */
-  publicInput: string;
-  /** Sign a transaction — provided by Stellar Wallets Kit */
-  signTransaction: (xdr: string, opts: { network: string; networkPassphrase: string }) => Promise<string>;
-}
-
-export interface OnChainVerifyResult {
+export interface VerifyResult {
   success: boolean;
   txHash: string;
 }
 
 export async function verifyAgeOnChain(
-  params: VerifyOnChainParams
-): Promise<OnChainVerifyResult> {
-  if (!CONTRACT_ID) {
-    throw new Error(
-      "VITE_AGE_VERIFIER_CONTRACT_ID not set. Deploy the contract and add it to .env"
-    );
-  }
+  callerAddress: string,
+  proofResult: AgeProofResult,
+  signTransaction: (xdr: string) => Promise<string>
+): Promise<VerifyResult> {
+  if (!CONTRACT_ID) throw new Error("VITE_AGE_VERIFIER_CONTRACT_ID not set");
 
   const server = new SorobanRpc.Server(RPC_URL);
-  const account = await server.getAccount(params.callerAddress);
+  const account = await server.getAccount(callerAddress);
   const contract = new Contract(CONTRACT_ID);
 
-  // Derive nullifier (32 bytes)
-  const nullifierBytes = new Uint8Array(32);
-  crypto.getRandomValues(nullifierBytes); // random nullifier per submission
+  // Random 32-byte nullifier (prevents replay)
+  const nullifierBytes = crypto.getRandomValues(new Uint8Array(32));
 
-  // Build pub_inputs Vec<Bn254Fr> (one element for ageVerifier)
-  const pubInputsVal = xdr.ScVal.scvVec([hexToFr(params.publicInput)]);
-
-  const callArgs = [
-    proofToScVal(params.proof),
-    pubInputsVal,
-    nativeToScVal(nullifierBytes, { type: "bytes" }),
-  ];
-
-  const tx = new TransactionBuilder(account, {
-    fee: "100",
-    networkPassphrase: NETWORK_PASSPHRASE,
-  })
-    .addOperation(contract.call("verify", ...callArgs))
+  const tx = new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase: NETWORK_PASSPHRASE })
+    .addOperation(
+      contract.call(
+        "verify",
+        buildProofScVal(proofResult),
+        buildPubInputsScVal(proofResult),
+        xdr.ScVal.scvBytes(Buffer.from(nullifierBytes)),
+        hexToScBytes(proofResult.issuerSig)
+      )
+    )
     .setTimeout(30)
     .build();
 
-  // Simulate first to get resource footprint
-  const simResult = await server.simulateTransaction(tx);
-  if (SorobanRpc.Api.isSimulationError(simResult)) {
-    throw new Error(`Simulation failed: ${simResult.error}`);
+  const sim = await server.simulateTransaction(tx);
+  if (SorobanRpc.Api.isSimulationError(sim)) {
+    throw new Error(`Simulation failed: ${sim.error}`);
   }
 
-  const preparedTx = SorobanRpc.assembleTransaction(tx, simResult).build();
+  const prepared = SorobanRpc.assembleTransaction(tx, sim).build();
+  const signedXdr = await signTransaction(prepared.toXDR());
+  const final = TransactionBuilder.fromXDR(signedXdr, NETWORK_PASSPHRASE);
 
-  // Sign via Wallets Kit
-  const signedXdr = await params.signTransaction(preparedTx.toXDR(), {
-    network: NETWORK,
-    networkPassphrase: NETWORK_PASSPHRASE,
-  });
-
-  // Submit
-  const submitResult = await server.sendTransaction(
-    TransactionBuilder.fromXDR(signedXdr, NETWORK_PASSPHRASE)
-  );
-
-  if (submitResult.status === "ERROR") {
-    throw new Error(`Submission failed: ${JSON.stringify(submitResult.errorResult)}`);
+  const send = await server.sendTransaction(final);
+  if (send.status === "ERROR") {
+    throw new Error(`Submit failed: ${JSON.stringify(send.errorResult)}`);
   }
 
   // Poll for confirmation
-  let txResult = await server.getTransaction(submitResult.hash);
-  let attempts = 0;
-  while (txResult.status === SorobanRpc.Api.GetTransactionStatus.NOT_FOUND && attempts < 10) {
+  for (let i = 0; i < 12; i++) {
     await new Promise((r) => setTimeout(r, 2000));
-    txResult = await server.getTransaction(submitResult.hash);
-    attempts++;
+    const result = await server.getTransaction(send.hash);
+    if (result.status === SorobanRpc.Api.GetTransactionStatus.SUCCESS) {
+      return { success: true, txHash: send.hash };
+    }
+    if (result.status === SorobanRpc.Api.GetTransactionStatus.FAILED) {
+      throw new Error(`Transaction failed: ${JSON.stringify(result)}`);
+    }
   }
 
-  if (txResult.status === SorobanRpc.Api.GetTransactionStatus.SUCCESS) {
-    return { success: true, txHash: submitResult.hash };
-  }
+  throw new Error("Transaction confirmation timeout");
+}
 
-  throw new Error(`Transaction failed: ${txResult.status}`);
+export async function hasCredential(addressHashHex: string): Promise<boolean> {
+  const server = new SorobanRpc.Server(RPC_URL);
+  const contract = new Contract(CONTRACT_ID);
+  const account = await server.getAccount(
+    "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN" // read-only fee source
+  ).catch(() => null);
+  if (!account) return false;
+
+  const tx = new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase: NETWORK_PASSPHRASE })
+    .addOperation(contract.call("has_credential", hexToScBytes(addressHashHex)))
+    .setTimeout(30)
+    .build();
+
+  const sim = await server.simulateTransaction(tx);
+  if (SorobanRpc.Api.isSimulationError(sim)) return false;
+  const result = (sim as SorobanRpc.Api.SimulateTransactionSuccessResponse).result;
+  if (!result) return false;
+  return result.retval.switch() === xdr.ScValType.scvBool() && result.retval.b();
 }
 
 export { NETWORK, RPC_URL, CONTRACT_ID };

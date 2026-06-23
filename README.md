@@ -540,14 +540,23 @@ Demo flow:
 - [x] `frontend/src/services/stellar.ts` — Soroban RPC + Stellar Wallets Kit integration
 - [x] `CLAUDE.md` — agent context aligned with Stellar Skills
 
+### ✅ Deployed to Stellar Testnet
+
+- [x] **Testnet deployment** (`stellar contract deploy`)
+  - Contract ID: `CA7ZALWIDPVDBYSZXMO4WOM4INCWD7UUAZ3XJEQICWGY6H2JDLGGDKEO`
+  - Explorer: https://lab.stellar.org/r/testnet/contract/CA7ZALWIDPVDBYSZXMO4WOM4INCWD7UUAZ3XJEQICWGY6H2JDLGGDKEO
+  - Deployer: `GBZFUMBDCDL7FL5VLD2IG4AEVWM4RYNXLOCEXWP72E33TLEIOADJMHMQ`
+- [x] **Contract initialized** (`initialize` with real VK + Issuer Ed25519 pubkey)
+  - Groth16 verification key uploaded on-chain
+  - Issuer pubkey: `c06840fcf5...d0571` (testnet only)
+- [x] `scripts/initialize_contract.js` — automated initialize via stellar-sdk
+
 ### 🚧 In Progress (next)
 
-- [ ] Deploy contract to Stellar testnet → get Contract ID
-- [ ] `stellar keys generate alice && friendbot` → fund testnet account
-- [ ] `stellar contract deploy` → initialize with real VK + Issuer pubkey
 - [ ] Frontend: Freighter wallet connection via Stellar Wallets Kit
-- [ ] Frontend: client-side proof generation → submit to testnet
-- [ ] End-to-end demo: browser proof → on-chain verification → credential
+- [ ] Frontend: client-side proof generation → submit to testnet contract
+- [ ] End-to-end demo: browser proof → on-chain verification → credential issued
+- [ ] Record 2–3 min demo video for hackathon submission
 
 ### 📋 Roadmap — Complete Version
 
