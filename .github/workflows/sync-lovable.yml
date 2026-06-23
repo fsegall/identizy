@@ -1,0 +1,44 @@
+name: Sync identizy → proof-identity-nexus (Lovable)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout identizy repo
+        uses: actions/checkout@v4
+
+      - name: Clone proof-identity-nexus (Lovable)
+        run: |
+          git clone https://x-access-token:${{ secrets.PERSONAL_GITHUB_TOKEN }}@github.com/fsegall/proof-identity-nexus.git /tmp/proof-identity-nexus
+
+      - name: Sync frontend/ → proof-identity-nexus
+        run: |
+          rsync -av --delete \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='dist' \
+            --exclude='.env*' \
+            frontend/ \
+            /tmp/proof-identity-nexus/
+
+      - name: Commit and push if changed
+        run: |
+          cd /tmp/proof-identity-nexus
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Nenhuma mudança para sincronizar."
+          else
+            COMMIT_SHA="${{ github.sha }}"
+            git commit -m "sync: identizy@${COMMIT_SHA:0:7}"
+            git push origin main
+          fi
