@@ -9,6 +9,8 @@ import Landing from "./pages/Landing";
 import WalletConnect from "./pages/WalletConnect";
 import ProofGeneration from "./pages/ProofGeneration";
 import Dashboard from "./pages/Dashboard";
+import Auth from "./pages/Auth";
+import CreateAttestation from "./pages/CreateAttestation";
 import NotFound from "./pages/NotFound";
 
 const App = () => (
@@ -25,6 +27,8 @@ const App = () => (
                 <Route path="/connect" element={<WalletConnect />} />
                 <Route path="/proof" element={<ProofGeneration />} />
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/create-attestation" element={<CreateAttestation />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>

@@ -1,40 +1,32 @@
 
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAuth } from '@/hooks/useAuth';
-import { useWallet } from '@/hooks/useWallet';
-import { 
-  Shield, 
-  Wallet, 
-  Lock, 
-  User, 
+import {
+  Shield,
+  Wallet,
+  Lock,
+  User,
   Sparkles,
   ArrowRight,
   Play,
   Zap,
   Globe,
   Plus,
-  LogOut
 } from 'lucide-react';
+
+// Update with YouTube/Loom URL once the demo video is uploaded
+const DEMO_VIDEO_URL = "";
 
 const Landing = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { user, signOut } = useAuth();
-  const { isConnected, account, connectWallet, disconnectWallet } = useWallet();
 
-  const handleSignOut = async () => {
-    await signOut();
-  };
-
-  const handleGetStarted = () => {
-    if (user) {
-      navigate('/connect');
-    } else {
-      navigate('/auth');
+  const handleViewDemo = () => {
+    if (DEMO_VIDEO_URL) {
+      window.open(DEMO_VIDEO_URL, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -100,27 +92,6 @@ const Landing = () => {
         </div>
         <div className="flex items-center space-x-4">
           <LanguageToggle />
-          {isConnected ? (
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={disconnectWallet}
-              className="flex items-center gap-2"
-            >
-              <Wallet className="h-4 w-4" />
-              Disconnect
-            </Button>
-          ) : (
-            <Button 
-              variant="default" 
-              size="sm"
-              onClick={connectWallet}
-              className="flex items-center gap-2"
-            >
-              <Wallet className="h-4 w-4" />
-              Connect Wallet
-            </Button>
-          )}
           <Button
             variant="outline"
             size="sm"
@@ -130,25 +101,18 @@ const Landing = () => {
             <Plus className="h-4 w-4" />
             {t('nav.createAttestation')}
           </Button>
-          {user ? (
-            <Button 
-              variant="ghost" 
-              onClick={handleSignOut}
-              className="flex items-center gap-2"
-            >
-              <LogOut className="h-4 w-4" />
-              {t('nav.logout')}
-            </Button>
-          ) : (
-            <>
-              <Button variant="ghost" onClick={() => navigate('/auth')}>
-                {t('nav.login')}
-              </Button>
-              <Button onClick={handleGetStarted} className="btn-gradient">
-                {t('nav.getStarted')}
-              </Button>
-            </>
-          )}
+          <Button variant="ghost" onClick={() => navigate('/auth')}>
+            {t('nav.login')}
+          </Button>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => navigate('/connect')}
+            className="flex items-center gap-2"
+          >
+            <Wallet className="h-4 w-4" />
+            Connect Wallet
+          </Button>
         </div>
       </nav>
 
@@ -177,18 +141,20 @@ const Landing = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="btn-gradient text-lg px-8 py-6 h-auto group"
-              onClick={handleGetStarted}
+              onClick={() => navigate('/connect')}
             >
               {t('hero.startNow')}
               <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <Button 
-              variant="outline" 
-              size="lg" 
+            <Button
+              variant="outline"
+              size="lg"
               className="text-lg px-8 py-6 h-auto border-2 group"
+              onClick={handleViewDemo}
+              disabled={!DEMO_VIDEO_URL}
             >
               <Play className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
               {t('hero.viewDemo')}
@@ -283,10 +249,10 @@ const Landing = () => {
           <p className="text-lg text-muted-foreground mb-8">
             {t('cta.subtitle')}
           </p>
-          <Button 
-            size="lg" 
+          <Button
+            size="lg"
             className="btn-gradient text-lg px-8 py-6 h-auto"
-            onClick={handleGetStarted}
+            onClick={() => navigate('/connect')}
           >
             {t('cta.button')}
             <Sparkles className="ml-2 h-5 w-5" />
@@ -304,7 +270,8 @@ const Landing = () => {
             <span className="font-semibold">Identizy</span>
           </div>
           <p className="text-sm text-muted-foreground">
-            {t('footer.copyright')}
+            © 2026 Identizy. Privacy-first identity verification. By{' '}
+            <span className="font-medium">Livre Solutions</span>
           </p>
         </div>
       </footer>

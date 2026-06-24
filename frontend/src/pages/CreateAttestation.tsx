@@ -29,7 +29,7 @@ const CreateAttestation = () => {
       icon: Calendar,
       color: 'from-blue-500 to-cyan-500',
       available: true,
-      path: '/onboarding'
+      path: '/connect'
     },
     {
       id: 'identity-verification',
