@@ -8,9 +8,20 @@ A zero-knowledge identity system on Stellar that lets users verify their age wit
 
 ---
 
-## Live Demo — Stellar Testnet ✅
+## Live Demo — Stellar Mainnet ✅
 
-> The full end-to-end flow is **working on Stellar testnet** as of June 24, 2026.
+> The full end-to-end flow is **working on Stellar mainnet** as of June 24, 2026.
+
+### Mainnet (Public Network)
+
+| | |
+|---|---|
+| **Contract** | `CBPG3KIS6NEGWANQFEKWKFYFENECUWG4KLJZ7KN25SCPKODHFO33MMTY` |
+| **Explorer** | https://stellar.expert/explorer/public/contract/CBPG3KIS6NEGWANQFEKWKFYFENECUWG4KLJZ7KN25SCPKODHFO33MMTY |
+| **Proof tx** | https://stellar.expert/explorer/public/tx/0d8687d641401ed1bbc98df2cb6fab67c02abeb6bd5fa4762774afba3ac2b207 |
+| **Network** | Stellar Mainnet (Protocol 25 "X-Ray") |
+
+### Testnet
 
 | | |
 |---|---|
