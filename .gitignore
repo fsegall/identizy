@@ -16,11 +16,14 @@ dist/
 build/
 target/
 
-# Rust / Soroban
+# Rust / Soroban build outputs
 target/
 *.wasm
+# Keep browser proving artifacts served from frontend/public/
+!frontend/public/circuits/*.wasm
+!frontend/public/circuits/*.zkey
 
-# Circom artifacts (generated, not secrets)
+# Circom compilation artifacts (generated, not committed)
 *.r1cs
 *.sym
 *.wtns
@@ -28,9 +31,11 @@ witness.json
 proof.json
 public.json
 
-# Trusted setup artifacts (large binary files)
+# Trusted setup artifacts (large — kept locally only)
 *.ptau
 *.zkey
+# Keep the final proving key served from frontend/public/
+!frontend/public/circuits/*.zkey
 
 # Logs
 *.log
