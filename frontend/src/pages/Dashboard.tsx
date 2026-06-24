@@ -8,7 +8,8 @@ import { hasCredential, CONTRACT_ID } from "@/services/stellar";
 import { Shield, CheckCircle, ExternalLink, LogOut, RefreshCw } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
-const EXPLORER_BASE = "https://stellar.expert/explorer/testnet";
+const NETWORK = (import.meta.env.VITE_STELLAR_NETWORK ?? "testnet") as "testnet" | "mainnet";
+const EXPLORER_BASE = `https://stellar.expert/explorer/${NETWORK === "mainnet" ? "public" : "testnet"}`;
 
 const Dashboard = () => {
   const navigate = useNavigate();
