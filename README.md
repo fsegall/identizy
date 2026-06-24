@@ -8,6 +8,26 @@ A zero-knowledge identity system on Stellar that lets users verify their age wit
 
 ---
 
+## Live Demo — Stellar Testnet ✅
+
+> The full end-to-end flow is **working on Stellar testnet** as of June 24, 2026.
+
+| | |
+|---|---|
+| **Contract** | `CBY4RHLTT6CWB5K7M6IEMCI2BUVWAYAHOUS2XUG5HH2PDMDM77FIWFER` |
+| **Explorer** | https://stellar.expert/explorer/testnet/contract/CBY4RHLTT6CWB5K7M6IEMCI2BUVWAYAHOUS2XUG5HH2PDMDM77FIWFER |
+| **Proof tx** | https://stellar.expert/explorer/testnet/tx/c4db0d131a3d4a416087c6e0571f7cd0724be32e49f70feae8e295969e9bce76 |
+| **Network** | Stellar Testnet (Protocol 25 "X-Ray") |
+
+**What the proof transaction shows on-chain:**
+- `a`, `b`, `c` — Groth16 proof (BN254 curve points, EIP-196/197 encoding)
+- `[1u256, 20524…u256, 7946…u256]` — public signals: `isOldEnough=1`, `commitment`, `addressHash`
+- `→ true` — Soroban contract verified the ZK proof and issued the credential
+
+📹 **Demo video — coming June 28**
+
+---
+
 ## The Problem
 
 Every time you need to prove you're over 18 — to buy alcohol, access adult content, open a trading account, enter a venue — you hand over your passport, driver's license, or credit card to a company you may never trust again. That data is stored, breached, and sold. You've handed your identity to dozens of strangers.
@@ -23,7 +43,7 @@ Every time you need to prove you're over 18 — to buy alcohol, access adult con
 Identizy lets users:
 
 1. **Verify once** — upload a real ID document on our platform. We verify it, extract your birthdate, and sign an attestation tied to your Stellar address.
-2. **Mint a credential** — your browser generates a ZK proof that you're ≥ 18 *and* that the proof belongs to your specific address. You mint a soulbound, address-bound credential on Stellar — no personal data on-chain. *(Roadmap: the credential becomes a real NFT token visible in any Stellar wallet — your identity, carried as a token.)*
+2. **Mint a credential** — your browser generates a ZK proof that you're ≥ 18 *and* that the proof belongs to your specific address. You mint a soulbound, address-bound credential on Stellar — no personal data on-chain.
 3. **Use it everywhere** — any third-party site checks: "does this address hold a valid Identizy?" Stellar says yes. No document, no birthdate, no identity revealed.
 
 The credential is:
@@ -36,15 +56,13 @@ The credential is:
 
 ## Who Is Who (W3C Verifiable Credentials Model)
 
-Identizy follows the [W3C Verifiable Credentials](https://www.w3.org/TR/vc-data-model/) trust triangle. Understanding each role is key to understanding why the system is secure.
+Identizy follows the [W3C Verifiable Credentials](https://www.w3.org/TR/vc-data-model/) trust triangle.
 
 ---
 
 ### Issuer — Identizy Platform (us)
 
 > *"We checked the document. We vouch for this address."*
-
-The Issuer is the entity that performs real KYC and issues the attestation. In Identizy, that's us.
 
 **What the Issuer does:**
 1. Receives the user's ID document + selfie
@@ -55,25 +73,11 @@ The Issuer is the entity that performs real KYC and issues the attestation. In I
 6. Signs the commitment with the Issuer's Ed25519 private key: `issuerSig = sign(commitment)`
 7. Returns `issuerSig` to the user — this is the **KYC attestation seal**
 
-**What the Issuer never does:**
-- Store the birthDate on-chain
-- Reveal the birthDate to third parties
-- Know which services the user accesses later
-
-**Analogy:** A government that issues passports. The passport is a signed attestation from the government ("this person is who they say they are"). The government doesn't follow you to every bar you enter.
-
 ---
 
-### Holder — The End User (e.g., João, 25 years old)
+### Holder — The End User
 
 > *"I have the attestation. I'll prove what I need, nothing more."*
-
-The Holder is the user who went through KYC and now holds a private attestation.
-
-**What the Holder has (stored privately, never shared):**
-- Their real `birthDate` (e.g., `1998-03-15`)
-- The `issuerSig` received after KYC
-- Their Stellar wallet private key
 
 **What the Holder does to mint their credential:**
 1. In the browser, runs the ZK circuit with their private data:
@@ -82,18 +86,12 @@ The Holder is the user who went through KYC and now holds a private attestation.
 2. Sends to Soroban contract:
    - The ZK proof (mathematical evidence of the above)
    - The `issuerSig` (the KYC seal from the Issuer)
-3. Contract verifies both → mints a soulbound Identizy token to João's address
-
-**What João does to use the credential at a third-party site:**
-- Nothing special. The site checks his Stellar address on-chain. Done.
+3. Contract verifies both → mints a soulbound credential to the holder's address
 
 **What the credential does NOT reveal:**
-- João's real name, date of birth, document number
-- Which document he used
-- When he did KYC
-- Which other sites he has accessed
-
-**Analogy:** João has a passport (attestation from the Issuer). When he enters a bar, he doesn't hand over the passport — he shows an Identizy token that proves he's been ID-checked, without revealing anything else.
+- Real name, date of birth, document number
+- Which document was used or when KYC happened
+- Which services the holder has accessed
 
 ---
 
@@ -101,32 +99,16 @@ The Holder is the user who went through KYC and now holds a private attestation.
 
 > *"I don't need to know who you are. I just need to know you're verified."*
 
-The Verifier is any service that requires age verification: an online alcohol retailer, an adult content platform, a DeFi protocol with age-gated products, a venue ticketing system.
+**Integration — 3 lines of code:**
+```javascript
+import { Contract, rpc } from "@stellar/stellar-sdk";
+const contract = new Contract("CBY4RHLTT6CWB5K7M6IEMCI2BUVWAYAHOUS2XUG5HH2PDMDM77FIWFER");
+const hasIt = await contract.call("has_credential", addressHashBytes);
+```
 
-**What the Verifier does:**
-1. Asks the user to connect their Stellar wallet
-2. Queries the Identizy Soroban contract **directly on the blockchain**:
-   ```javascript
-   // Via @stellar/stellar-sdk — no Identizy server involved
-   const result = await contract.call("has_credential", addressHash);
-   // → true or false
-   ```
-3. Gets `true` → grants access
+No Identizy account. No Identizy API key. No Identizy server. Just Stellar.
 
-> **Important:** `has_credential` is a **Soroban smart contract function on Stellar**, not an Identizy API. The Verifier calls the blockchain directly — no Identizy server is in the loop. This means there is no centralized database to breach, no API that can go offline, and no way for Identizy to block or revoke access retroactively. The credential lives on Stellar permanently.
-
-**What the Verifier never sees:**
-- The user's real identity
-- Their birthdate
-- The KYC attestation
-- Which other sites the user has accessed
-
-**What the Verifier trusts:**
-- Identizy's Issuer public key (one-time trust, hardcoded on contract deployment)
-- The Soroban smart contract logic (open source, auditable on Stellar)
-- The ZK proof system (Groth16 + BN254, mathematically sound)
-
-**Analogy:** The bar's bouncer. They don't need a copy of João's passport — they just need to know that a trusted authority (the government/Identizy) already verified him. The bouncer sees a stamp, not the person's identity. And the bouncer doesn't call the government every time — the stamp is self-contained proof.
+> `has_credential` is a **Soroban smart contract function**, not an Identizy API. The Verifier calls the blockchain directly — no Identizy server is in the loop.
 
 ---
 
@@ -136,7 +118,6 @@ The Verifier is any service that requires age verification: an online alcohol re
                     ┌─────────────────┐
                     │    ISSUER       │
                     │  Identizy       │
-                    │                 │
                     │  • Does KYC     │
                     │  • Signs        │
                     │    attestation  │
@@ -148,8 +129,7 @@ The Verifier is any service that requires age verification: an online alcohol re
                              │
             ┌────────────────▼──────────────┐
             │          HOLDER               │
-            │       João (user)             │
-            │                               │
+            │       User (browser)          │
             │  • Receives attestation       │
             │  • Generates ZK proof         │◄────────────────┐
             │  • Mints credential           │                 │
@@ -162,11 +142,8 @@ The Verifier is any service that requires age verification: an online alcohol re
                     ┌─────────────────┐                       │
                     │   VERIFIER      │                       │
                     │  3rd-party site ├───────────────────────┘
-                    │                 │
-                    │  • Checks       │
-                    │    has_cred()   │
-                    │  • Grants       │
-                    │    access       │
+                    │  • has_cred()   │
+                    │  • Grants access│
                     └─────────────────┘
 
 Key property: Verifier learns NOTHING about Holder from Issuer.
@@ -185,7 +162,7 @@ Key property: Verifier learns NOTHING about Holder from Issuer.
 │                                                             │
 │  User uploads ID + selfie                                   │
 │  Platform verifies document authenticity                    │
-│  Platform signs: Issuer.sign(birthDate, stellarAddress)     │
+│  Platform signs: Issuer.sign(Poseidon(birthDate, addrHash)) │
 │  User receives private attestation — never goes on-chain    │
 └──────────────────────────┬──────────────────────────────────┘
                            │
@@ -198,8 +175,11 @@ Key property: Verifier learns NOTHING about Holder from Issuer.
 │    ✓ My birthDate satisfies age ≥ 18                        │
 │    ✓ This proof is bound to Stellar address A               │
 │                                                             │
-│  Soroban contract verifies proof → mints soulbound token    │
-│  Nullifier stored → prevents proof replay                   │
+│  Soroban contract:                                          │
+│    1. Verifies Groth16 BN254 proof (pairing_check)          │
+│    2. Verifies Issuer Ed25519 signature (ed25519_verify)    │
+│    3. Checks nullifier not previously used                  │
+│    4. Mints soulbound credential to caller's address        │
 └──────────────────────────┬──────────────────────────────────┘
                            │
 ┌──────────────────────────▼──────────────────────────────────┐
@@ -209,245 +189,128 @@ Key property: Verifier learns NOTHING about Holder from Issuer.
 │  Stellar: "Yes, credential valid, issued by Identizy"       │
 │  User accesses service — no document, no data, no trace     │
 │                                                             │
-│  The credential is a disposable identity:                   │
-│  → Transfer it to another address? Proof fails (wrong addr) │
+│  Security properties:                                       │
+│  → Transfer token to another address? Proof fails (addr ≠)  │
 │  → Replay the proof? Nullifier blocks it                    │
 │  → Fake a birthdate? No Issuer signature → proof rejected   │
 └─────────────────────────────────────────────────────────────┘
 ```
-
-### Why Address-Bound Is Novel
-
-Most ZK credentials prove a statement ("I am ≥ 18"). Identizy goes further: the ZK proof **commits to the holder's Stellar address** as a public input. This means:
-
-- The credential is cryptographically non-transferable before the contract even enforces soulbound
-- A minor who receives a transferred token cannot pass verification — the proof inside commits to the original address
-- Third-party sites get a guarantee: the credential and the address are inseparable
-
----
-
-## Use Cases
-
-Any service that today asks "are you 18+?" can replace that flow with a single blockchain check. The user never re-submits a document. The service never stores personal data.
-
----
-
-### 🍺 Alcohol & Cannabis E-Commerce
-
-**Today:** Customer uploads driver's license → store stores it → data breach risk.
-
-**With Identizy:**
-```
-Customer connects Stellar wallet
-Store calls: has_credential(wallet_address) → true
-Order approved — no document stored, no identity revealed
-```
-
-**Concrete example:** A craft beer subscription service in Brazil. Legal requirement: verify buyer is ≥ 18. With Identizy, the store integrates 3 lines of Stellar SDK and never sees a CPF or RG.
-
----
-
-### 🔞 Adult Content Platforms
-
-**Today:** "Upload selfie + ID" — platforms store sensitive data, face regulatory risk, become targets for leaks.
-
-**With Identizy:**
-```
-Creator/viewer connects Stellar wallet
-Platform checks: has_credential(address) → true
-Access granted — platform knows only that Identizy verified the user
-```
-
-**Concrete example:** An 18+ content platform operating under GDPR. They are legally required to verify age but also legally required not to store unnecessary personal data. Identizy solves both simultaneously.
-
----
-
-### 🏦 DeFi / Financial Protocols
-
-**Today:** Exchanges do full KYC on every platform — passport scanned 5× across Binance, Coinbase, Kraken, etc.
-
-**With Identizy:**
-```
-User holds Identizy credential (one KYC event)
-DeFi protocol checks: has_credential(address) → true
-Protocol knows: "this address was verified by a trusted issuer"
-→ User can access age-gated derivatives, comply with jurisdiction rules
-```
-
-**Concrete example:** A Stellar-based DEX that needs to block minors from leverage trading under MiCA (EU regulation). They add a 10-line integration and comply — without becoming a KYC custodian themselves.
-
----
-
-### 🎫 Events & Venues
-
-**Today:** Line at the door, ID check per person, slow queue.
-
-**With Identizy:**
-```
-Ticket purchase: has_credential(address) → confirm buyer is 18+
-Venue entry: show Stellar address QR code → instant verification
-```
-
-**Concrete example:** A festival with 18+ age requirement. Ticket platform verifies at purchase time. No queue at the door — the wristband IS the wallet.
-
----
-
-### 🎮 Gaming & Gambling
-
-**Today:** Online gambling sites require full KYC per platform, storing documents they shouldn't need.
-
-**With Identizy:**
-```
-Player registers with Stellar wallet
-Casino checks: has_credential(address) → true
-Plays — casino never touched a passport
-```
-
-**Concrete example:** A Stellar-based prediction market that is legal only for adults in certain jurisdictions. Compliance achieved with one contract call.
-
----
-
-### 🏥 Healthcare & Telemedicine
-
-**Today:** Age-gated prescription refills require patient identification, creating healthcare data risk.
-
-**With Identizy:**
-```
-Patient authenticates with Stellar wallet
-Pharmacy checks: has_credential(address) → confirm patient is 18+
-Prescription processed — no personal health data cross-contaminated with KYC data
-```
-
----
-
-### The Common Pattern
-
-In every case, the integration is the same three steps for the Verifier:
-
-```javascript
-import { Contract, SorobanRpc } from "@stellar/stellar-sdk";
-
-const IDENTIZY_CONTRACT = "C..."; // Identizy contract ID on Stellar
-const rpc = new SorobanRpc.Server("https://soroban-testnet.stellar.org");
-
-async function isVerified(stellarAddress: string): Promise<boolean> {
-  const contract = new Contract(IDENTIZY_CONTRACT);
-  const addressHash = stellarAddressToField(stellarAddress); // utility function
-  const result = await rpc.simulateTransaction(
-    contract.call("has_credential", addressHash)
-  );
-  return result === true;
-}
-```
-
-No Identizy account. No Identizy API key. No Identizy server. Just Stellar.
 
 ---
 
 ## Technical Architecture
 
 ```
-Off-chain                           On-chain (Stellar)
+Off-chain                           On-chain (Stellar Testnet)
 ─────────────────────               ──────────────────────────
-Issuer Backend (Node.js)            Soroban Smart Contract
-  • Document verification             • verify() — Groth16 BN254
-  • EdDSA signing service             • mint_credential()
-  • sign(birthDate, address)          • Soulbound token logic
-        │                             • Nullifier registry
-        │ attestation                       ▲
-        ▼                                   │
-Browser (React + snarkjs)                   │
-  • AgeVerifier circuit (WASM)              │
-  • Proof generation (offline-safe)         │
-  • Stellar Wallets Kit (Freighter)  ───────┘
-  • Submit tx to Soroban RPC
+Issuer (Node.js script)             Soroban Smart Contract
+  • Ed25519 keygen                    CBY4…WFER
+  • sign(commitment)                  • verify()
+        │                               – Groth16 BN254 pairing
+        │ issuerSig                     – Ed25519 issuer check
+        ▼                               – nullifier anti-replay
+Browser (React + snarkjs)               – mint credential
+  • addressToField(addr)            • has_credential()
+  • groth16.fullProve() [WASM]      • is_nullifier_used()
+  • pre-negate pi_a                       ▲
+  • Stellar Wallets Kit (Freighter) ──────┘
+  • verifyAgeOnChain() → RPC
 ```
 
 ### ZK Stack
 
 | Layer | Technology | Notes |
 |---|---|---|
-| Circuit DSL | Circom 2.0 | LessThan + EdDSA verifier |
+| Circuit DSL | Circom 2.0 | LessThan + Poseidon composites |
 | Proof system | Groth16 | Most efficient for on-chain verification |
-| Curve | BN254 (bn128) | Ethereum-compatible, supported since Protocol 25 |
-| Hash | Poseidon | ZK-optimized, native Stellar host function (Protocol 25) |
-| On-chain verifier | Soroban (Rust) | BN254 `g1_mul`, `g1_add`, `pairing_check` host functions |
-| Proof generation | snarkjs + WASM | Client-side in browser — secrets never leave device |
-| Wallets | Stellar Wallets Kit | Freighter + multi-wallet support |
-| Token standard | Soroban soulbound | Custom non-transferable credential token |
+| Curve | BN254 (bn128) | Native Soroban host functions (CAP-0074) |
+| Hash | Poseidon | ZK-optimized, native host function (CAP-0075) |
+| On-chain verifier | Soroban (Rust) | `g1_mul`, `g1_add`, `pairing_check` |
+| Proof generation | snarkjs + WASM | Client-side — secrets never leave device |
+| Wallets | Stellar Wallets Kit | Freighter + xBull |
 
-### Contract Interface
+### Circuit (`circuits/age_verifier/age_verifier.circom`)
 
-```rust
-// Deploy → initialize once with the verification key
-fn initialize(env: Env, vk: StoredVk) -> Result<(), Error>
-
-// User submits proof → receives soulbound credential
-fn verify_and_mint(
-    env: Env,
-    proof: Groth16Proof,
-    pub_inputs: Vec<Bn254Fr>,   // [isOldEnough, addressCommitment]
-    nullifier: BytesN<32>,
-    recipient: Address,
-) -> Result<(), Error>
-
-// Third parties query credential status
-fn has_credential(env: Env, address: Address) -> bool
-fn credential_expires_at(env: Env, address: Address) -> Option<u64>
-```
-
-### Circuit (Circom 2.0)
-
-**MVP — `age_verifier.circom`** (currently implemented):
-```
-Private inputs: birthDate, minAge, currentDate
-Public output:  isOldEnough (1 or 0)
-```
-
-**Current — `age_verifier.circom`** (Option A, implemented):
 ```
 Private inputs:  birthDate, minAge, currentDate
-Public input:    addressHash
-Public outputs:  isOldEnough, commitment = Poseidon(birthDate, addressHash)
-Issuer sig:      verified by Soroban contract via Ed25519 host function (outside ZK)
+Public input:    addressHash  (Stellar address as BN254 scalar field element)
+Public outputs:  isOldEnough  (1 if age ≥ minAge, else 0)
+                 commitment   (Poseidon(birthDate, addressHash))
+
+Stats: 305 R1CS constraints · BN254/Groth16
 ```
 
-**Roadmap — `age_verifier_with_attestation.circom`** (Option B, EdDSA in-circuit):
-```
-Private inputs:  birthDate, minAge, currentDate, issuerSigR[256], issuerSigS[256]
-Public inputs:   addressHash, issuerPubKey[256]
-Public outputs:  isOldEnough, commitment
-Trade-off:       +~3000 constraints, needs powersOfTau17 (~1.2 GB), slower proof
+### Contract Interface (`contracts/age_verifier/src/lib.rs`)
+
+```rust
+// Initialize once after deploy — uploads VK + Issuer pubkey on-chain
+fn initialize(env: Env, vk: StoredVk, issuer_pub_key: BytesN<32>) -> Result<(), Error>
+
+// Verify ZK proof + Issuer attestation → mint soulbound credential
+// pub_inputs = [isOldEnough: Fr, commitment: Fr, addressHash: Fr]
+fn verify(
+    env: Env,
+    proof: Groth16Proof,          // { a: G1, b: G2, c: G1 }
+    pub_inputs: Vec<Fr>,          // BN254 scalar field elements
+    nullifier: BytesN<32>,        // random anti-replay token
+    issuer_sig: BytesN<64>,       // Ed25519 sig over commitment bytes
+) -> Result<bool, Error>
+
+// Query — called directly by third parties on Stellar, no Identizy API needed
+fn has_credential(env: Env, address_hash: BytesN<32>) -> bool
+fn is_nullifier_used(env: Env, nullifier: BytesN<32>) -> bool
 ```
 
-> **Why Option A is sufficient:** The Poseidon commitment cryptographically binds
-> `birthDate` to `addressHash`. The contract then verifies the Issuer's Ed25519
-> signature over that commitment. If both pass, it is mathematically impossible to
-> decouple the KYC event from the ZK proof — the same security guarantee as
-> Option B, achieved without the circuit complexity. Option B is primarily useful
-> in trustless settings where you cannot trust the verifying contract.
+### Key Bug Fixes During Development
+
+Two non-obvious bugs encountered and fixed during this build — documented here for future Soroban ZK developers:
+
+**1. `Bn254G1Affine::neg()` crash in soroban-sdk 25.1.0**
+The `neg()` method calls `Bytes::slice().as_val()` which produces a `BytesVal`, but `Bn254Fp::try_from_val` expects a `BytesN<32>Val`. In WASM this hits `unwrap_optimized()` → `wasm32::unreachable()` → `UnreachableCodeReached`.
+Fix: pre-negate `pi_a.y` in the frontend (`negY = BN254_FP - y`) before encoding, and call `pairing_check(proof.a, ...)` directly in the contract.
+
+**2. `Fr` public inputs must be `scvU256`, not `scvBytes`**
+`Fr::try_from_val` internally calls `U256::try_from_val` which expects a `U256Val` (`scvU256`). Passing `scvBytes` causes `unwrap_optimized()` → `UnreachableCodeReached`.
+Fix: encode Fr elements as `xdr.ScVal.scvU256(new xdr.UInt256Parts({ hiHi, hiLo, loHi, loLo }))`.
 
 ---
 
 ## Repository Structure
 
 ```
-Identizy/
-├── contracts/age_verifier/        # Soroban Rust smart contract
+ZK_Stellar/
+├── CLAUDE.md                           # Agent instructions (Stellar Skills)
+├── README.md                           # This file
+├── Cargo.toml                          # Workspace root
+├── rust-toolchain.toml                 # Rust 1.89.0 + wasm32
+│
+├── circuits/age_verifier/
+│   ├── age_verifier.circom             # ✅ Circuit
+│   ├── verification_key.json           # ✅ On-chain VK
+│   ├── circuit_final.zkey              # ✅ Proving key
+│   └── age_verifier_js/
+│       └── age_verifier.wasm           # ✅ Browser proving
+│
+├── contracts/age_verifier/
+│   ├── Cargo.toml                      # soroban-sdk =25.1.0 (pinned)
 │   └── src/
-│       ├── lib.rs                 # Groth16 BN254 verifier + nullifier
-│       └── test.rs                # Tests with real proof values
-├── circuits/age_verifier/         # Circom 2.0 circuit
-│   ├── age_verifier.circom        # MVP circuit
-│   └── input.json                 # Example: born 2000-01-01, minAge 18
+│       ├── lib.rs                      # ✅ Groth16 verifier + Ed25519 + nullifiers
+│       └── test.rs                     # ✅ 3/3 tests passing
+│
 ├── scripts/
-│   ├── setup.sh                   # Install Rust, stellar-cli, circom, snarkjs
-│   ├── convert_vk.js              # verification_key.json → Soroban hex format
-│   └── generate_proof.js          # Generate + format proof for contract call
-├── frontend/src/services/
-│   ├── zkProof.ts                 # Client-side proof generation (snarkjs)
-│   └── stellar.ts                 # Soroban contract interaction
-└── Makefile                       # setup / circuits / build / test / deploy
+│   ├── address_to_field.js             # ✅ Stellar G-addr → BN254 field element
+│   ├── generate_proof.js               # ✅ CLI proof generation
+│   ├── sign_commitment.js              # ✅ Issuer Ed25519 keygen + signing
+│   ├── convert_vk.js                   # ✅ VK JSON → Soroban hex
+│   └── initialize_contract.js          # ✅ Automated testnet initialize
+│
+└── frontend/
+    └── src/
+        ├── services/zkProof.ts         # ✅ Client-side snarkjs WASM
+        ├── services/stellar.ts         # ✅ Soroban RPC + Wallets Kit
+        └── pages/
+            ├── ProofGeneration.tsx     # ✅ Date input → proof → Freighter sign
+            └── Dashboard.tsx           # ✅ Credential status display
 ```
 
 ---
@@ -457,167 +320,147 @@ Identizy/
 ### Prerequisites
 
 ```bash
-bash scripts/setup.sh
-# Installs: Rust 1.89, wasm32 target, stellar-cli, circom, snarkjs
+# Rust (cargo needed for contract build)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+rustup target add wasm32-unknown-unknown
+
+# Stellar CLI (prebuilt binary — compiling needs Rust 1.93+)
+wget https://github.com/stellar/stellar-cli/releases/download/v27.0.0/stellar-cli-27.0.0-x86_64-unknown-linux-gnu.tar.gz
+tar xzf stellar-cli-27.0.0-*.tar.gz -C ~/.local/bin
+
+# Circom (prebuilt binary)
+wget https://github.com/iden3/circom/releases/download/v2.1.9/circom-linux-amd64 -O ~/.local/bin/circom
+chmod +x ~/.local/bin/circom
+
+# Node dependencies
+npm install                              # snarkjs in project root
+npm install --prefix circuits circomlib  # circomlib for circuit compilation
 ```
 
 ### Build & Test the Contract
 
 ```bash
-make build   # compile Soroban WASM
-make test    # run unit tests (5 tests with real proof values)
+source "$HOME/.cargo/env"
+cargo test -p age-verifier      # 3/3 tests must pass
+stellar contract build          # produces target/wasm32v1-none/release/age_verifier.wasm
 ```
 
 ### Compile Circuit & Generate Keys
 
 ```bash
-make circuits
-# → compiles circom, runs trusted setup, exports verification_key.json
-# → copies WASM + zkey to frontend/public/circuits/
+# Only needed after circuit changes — artifacts already committed
+export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+circom circuits/age_verifier/age_verifier.circom \
+  --r1cs --wasm --sym --output circuits/age_verifier \
+  -l circuits/node_modules
+
+node node_modules/.bin/snarkjs groth16 setup \
+  circuits/age_verifier/age_verifier.r1cs \
+  zk-threshold-proof-saas/packages/circuits/powersOfTau28_hez_final_12.ptau \
+  circuits/age_verifier/circuit_0000.zkey
+
+node node_modules/.bin/snarkjs zkey contribute \
+  circuits/age_verifier/circuit_0000.zkey \
+  circuits/age_verifier/circuit_final.zkey --name="contribution" -e="random"
+
+node node_modules/.bin/snarkjs zkey export verificationkey \
+  circuits/age_verifier/circuit_final.zkey \
+  circuits/age_verifier/verification_key.json
 ```
 
 ### Deploy to Testnet
 
 ```bash
-make deploy NETWORK=testnet ACCOUNT=alice
-# Initialize with VK:
-node scripts/convert_vk.js circuits/age_verifier/verification_key.json
-# → paste output into: stellar contract invoke -- initialize --vk '<output>'
+# Fund a new account via Friendbot
+stellar keys generate alice
+stellar keys address alice   # → fund at https://laboratory.stellar.org/ (Friendbot)
+
+# Deploy
+stellar contract deploy \
+  --wasm target/wasm32v1-none/release/age_verifier.wasm \
+  --source alice --network testnet
+
+# Initialize (updates CONTRACT_ID in .env first)
+node scripts/initialize_contract.js
 ```
 
 ### Run Frontend
 
 ```bash
-cd frontend && npm install && npm run dev
+cd frontend
+npm install
+npm run dev   # → http://localhost:8080
 ```
 
----
-
-## Demo
-
-> 📹 **[Demo video — coming June 28]**
-
-Demo flow:
-1. Connect Freighter wallet to the app
-2. Enter a birthdate (private — never leaves the browser)
-3. Proof generates client-side via WASM (watch the snarkjs output)
-4. Submit transaction — Soroban verifies the Groth16 proof on testnet
-5. Soulbound credential token appears in wallet
-6. Third-party site checks credential — access granted, zero data shared
+Connect Freighter wallet (testnet), enter a birthdate ≥ 18 years ago, click "Generate & Mint Credential".
 
 ---
 
-## Implementation Checklist
+## Implementation Status
 
-### ✅ Implemented & Verified
+### ✅ Complete — End-to-End Flow Working
 
-- [x] **Dev environment** — Rust 1.89, Circom 2.1.9, Stellar CLI 27.0, snarkjs 0.7.6, Node 24
-- [x] **Circom circuit compiled** (`circuits/age_verifier/age_verifier.circom`)
-  - 305 constraints (Groth16 / BN254)
-  - Private inputs: `birthDate`, `minAge`, `currentDate`
-  - Public input: `addressHash` (Stellar address as BN254 field element)
+- [x] **Dev environment** — Rust 1.89, Circom 2.1.9, Stellar CLI 27.0, snarkjs 0.7.6
+- [x] **Circom circuit compiled** — 305 R1CS constraints, BN254/Groth16
+  - Private: `birthDate`, `minAge`, `currentDate`
+  - Public input: `addressHash` (Stellar address as BN254 scalar field element)
   - Public outputs: `isOldEnough`, `commitment = Poseidon(birthDate, addressHash)`
-  - Artifacts: `.r1cs`, `.wasm`, `circuit_final.zkey`, `verification_key.json`
-- [x] **Real ZK proof generated and verified** ✅
-  - Input: `birthDate=2000-01-01`, `minAge=18`, `currentDate=2026-06-23`
-  - Output: `isOldEnough=true`, `commitment=0x1d130c12...`
-  - Local snarkjs verification: passed
-- [x] **Soroban BN254 Groth16 verifier contract** (`contracts/age_verifier/src/lib.rs`)
-  - 3 public signals: `[isOldEnough, commitment, addressHash]`
-  - Ed25519 Issuer signature check (Option A — outside ZK circuit)
-  - Anti-replay nullifier system (30-day persistent storage TTL)
-  - Typed error codes: `NotInitialized`, `InvalidProof`, `NullifierUsed`, etc.
-- [x] **Contract tests: 3/3 passing** ✅ (`cargo test -p age-verifier`)
-  - `test_double_initialize_rejected` — ok
-  - `test_verify_before_initialize_rejected` — ok
-  - `test_wrong_input_count_rejected` — ok
-  - Real VK and proof coordinates hardcoded from actual circuit run
-- [x] `scripts/convert_vk.js` — snarkjs VK → Soroban BN254 hex
-- [x] `scripts/generate_proof.js` — CLI proof with `addressHash` param
-- [x] `scripts/sign_commitment.js` — Issuer Ed25519 keygen + signing
-- [x] `scripts/address_to_field.js` — Stellar address → BN254 field element
-- [x] `frontend/src/services/zkProof.ts` — client-side snarkjs WASM proof generation
-- [x] `frontend/src/services/stellar.ts` — Soroban RPC + Stellar Wallets Kit integration
-- [x] `CLAUDE.md` — agent context aligned with Stellar Skills
+- [x] **Soroban Groth16 BN254 verifier** — `pairing_check` + Ed25519 + nullifiers
+- [x] **Contract tests: 3/3 passing** — real proof values hardcoded
+- [x] **Deployed to Stellar testnet** — `CBY4RHLTT6CWB5K7M6IEMCI2BUVWAYAHOUS2XUG5HH2PDMDM77FIWFER`
+- [x] **Contract initialized** — real VK + Issuer Ed25519 pubkey uploaded on-chain
+- [x] **Frontend: Freighter wallet connection** — Stellar Wallets Kit
+- [x] **Frontend: client-side proof generation** — snarkjs WASM in browser
+- [x] **Frontend: submit to testnet contract** — RPC + transaction signing
+- [x] **End-to-end demo working** — browser → Freighter → on-chain ZK verification → credential
+- [x] **Dashboard: credential status** — `has_credential()` query on Stellar
 
-### ✅ Deployed to Stellar Testnet
+### ⏳ Remaining for Submission
 
-- [x] **Testnet deployment** (`stellar contract deploy`)
-  - Contract ID: `CA7ZALWIDPVDBYSZXMO4WOM4INCWD7UUAZ3XJEQICWGY6H2JDLGGDKEO`
-  - Explorer: https://lab.stellar.org/r/testnet/contract/CA7ZALWIDPVDBYSZXMO4WOM4INCWD7UUAZ3XJEQICWGY6H2JDLGGDKEO
-  - Deployer: `GBZFUMBDCDL7FL5VLD2IG4AEVWM4RYNXLOCEXWP72E33TLEIOADJMHMQ`
-- [x] **Contract initialized** (`initialize` with real VK + Issuer Ed25519 pubkey)
-  - Groth16 verification key uploaded on-chain
-  - Issuer pubkey: `c06840fcf5...d0571` (testnet only)
-- [x] `scripts/initialize_contract.js` — automated initialize via stellar-sdk
+- [ ] Record 2–3 min demo video
+- [ ] Push repo to GitHub (public)
+- [ ] Submit on DoraHacks with video link
 
-### 🚧 In Progress (next)
+### 📋 Roadmap
 
-- [ ] Frontend: Freighter wallet connection via Stellar Wallets Kit
-- [ ] Frontend: client-side proof generation → submit to testnet contract
-- [ ] End-to-end demo: browser proof → on-chain verification → credential issued
-- [ ] Record 2–3 min demo video for hackathon submission
+**In-circuit EdDSA (Option B):** Move the Issuer signature verification inside the ZK circuit to eliminate the Ed25519 check in the contract (~+3,000 constraints, needs powersOfTau17).
 
-### 📋 Roadmap — Complete Version
+**NFT as Identity:** Turn the credential into a real SEP-0041 soulbound token — appears in Freighter/Lobstr, composable with any Stellar DeFi protocol, standard `balance()` interface for verifiers.
 
-**Issuer attestation layer (Option B — in-circuit EdDSA):**
-- [ ] Add `issuerSigR[]`, `issuerSigS[]` as private inputs to circuit
-- [ ] Add EdDSA signature verifier sub-circuit (circomlib `EdDSAVerifier`)
-- [ ] KYC onboarding UI: document upload → Issuer signs → user receives attestation
-- [ ] ~3,000 extra R1CS constraints; needs powersOfTau17 (~1.2 GB)
-- [ ] Trade-off: eliminates Soroban Ed25519 check but increases proving time
+**Production:** Real KYC provider (Jumio/Onfido), mainnet deployment, circuit + contract audit.
 
-**NFT as Identity (the differentiator):**
+---
 
-Today, Identizy stores the credential as a boolean flag in Soroban persistent storage. The next evolution is turning that credential into a **real Soroban Token (SEP-0041 NFT)** — not just a receipt, but the identity itself.
+## Use Cases
 
-When the credential *is* an NFT:
-- It appears in the user's wallet automatically (Freighter, Lobstr, any Stellar wallet)
-- It shows up in Stellar explorers (Stellar.Expert, StellarChain) — publicly auditable, no personal data
-- Other Soroban contracts can check `balance(address) > 0` using the standard token interface — composable with any DeFi protocol, DAO, or dApp on Stellar
-- It inherits Stellar's payment rail: fast settlement, low fees, global reach
-- The soulbound constraint (non-transferable) is enforced at the token level: `transfer()` always panics
+Any service that today asks "are you 18+?" can replace that flow with a single blockchain query — no document stored, no API key needed, no Identizy server in the loop.
 
-This is the vision: **your identity is a token you carry in your wallet, composable with the entire Stellar ecosystem, without ever revealing who you are.**
-
-Implementation steps:
-- [ ] Implement SEP-0041 token interface in contract (`mint`, `balance`, `transfer` blocked)
-- [ ] `mint_credential(address)` called internally after `verify()` succeeds
-- [ ] Token metadata: `name="Identizy Credential"`, `symbol="IDZC"`, `decimals=0`
-- [ ] `transfer()` returns `ContractError::SoulboundNonTransferable` always
-- [ ] Show token in frontend dashboard with "Your Identity" UI
-
-**Credential management features:**
-- [ ] Expiry: credential valid for N days, then re-verify (configurable per Issuer)
-- [ ] Revocation: Issuer can invalidate credentials (e.g., fraudulent document found)
-- [ ] Domain binding: per-service nullifiers for session unlinkability
-- [ ] Third-party SDK: JS library so any site can verify Identizy in 3 lines
-
-**Production:**
-- [ ] Mainnet deployment
-- [ ] Integration with real KYC provider (Jumio / Onfido / Persona)
-- [ ] Audit of ZK circuit and Soroban contract
+| Sector | Today | With Identizy |
+|---|---|---|
+| Alcohol e-commerce | Upload driver's license → store stores it | `has_credential(address)` → `true` |
+| Adult content | "Upload selfie + ID" → data breach risk | Wallet connect → credential check |
+| DeFi protocols | Full KYC on every platform × 5 platforms | One KYC, one credential, infinite use |
+| Events & venues | Line, ID check per person | Ticket purchase gated at `has_credential` |
+| Online gambling | Platform stores passport copies | One contract call, zero document stored |
 
 ---
 
 ## Why Stellar
 
-Stellar's Protocol 25 "X-Ray" and Protocol 26 "Yardstick" added the BN254 elliptic curve host functions (`g1_add`, `g1_mul`, `pairing_check`) and Poseidon hash natively to Soroban. This means Groth16 proof verification — the most common ZK proof system, used by Circom — runs efficiently on-chain for the first time on Stellar.
+Protocol 25 "X-Ray" added BN254 elliptic curve host functions (`g1_add`, `g1_mul`, `pairing_check`) and Poseidon hash natively to Soroban — enabling efficient on-chain Groth16 proof verification for the first time on Stellar. BN254 on Stellar mirrors Ethereum's EIP-196/197 precompiles, so existing Circom circuits port without modification.
 
-BN254 on Stellar mirrors Ethereum's EIP-196/197 precompiles. Existing Circom circuits **port without modification**. Identizy brings battle-tested ZK infrastructure (Circom + snarkjs) to Stellar's payment rails and institutional settlement network — the natural home for compliant, privacy-preserving identity.
+Identizy brings battle-tested ZK infrastructure (Circom + snarkjs) to Stellar's payment rails and institutional settlement network — the natural home for compliant, privacy-preserving identity.
 
 ---
 
 ## References
 
-Built on the shoulders of:
-- [Nethermind Stellar Private Payments](https://github.com/NethermindEth/stellar-private-payments) — BN254 Groth16 verifier pattern
+- [Nethermind Stellar Private Payments](https://github.com/NethermindEth/stellar-private-payments) — BN254 Groth16 verifier pattern on Soroban
 - [soroban-examples / groth16_verifier](https://github.com/stellar/soroban-examples/tree/main/groth16_verifier) — reference Soroban verifier
 - [Stellar Skills — ZK Proofs](https://skills.stellar.org/skills/zk-proofs/SKILL.md) — official ZK dev guidance
 - [Stellar Skills — Soroban](https://skills.stellar.org/skills/soroban/SKILL.md) — contract patterns
-- [circomlib](https://github.com/iden3/circomlib) — circuit primitives (LessThan, EdDSA)
+- [circomlib](https://github.com/iden3/circomlib) — circuit primitives (LessThan, Poseidon)
 - [snarkjs](https://github.com/iden3/snarkjs) — browser-side Groth16 proving
-- Privacy Pools whitepaper (Buterin et al.) — conceptual basis for compliant privacy
 
 ---
 

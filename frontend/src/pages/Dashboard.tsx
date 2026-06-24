@@ -17,6 +17,7 @@ const Dashboard = () => {
 
   const [credentialActive, setCredentialActive] = useState<boolean | null>(null);
   const [checking, setChecking] = useState(false);
+  const [checkError, setCheckError] = useState<string | null>(null);
   const txHash = searchParams.get("tx");
 
   useEffect(() => {
@@ -27,12 +28,14 @@ const Dashboard = () => {
   const checkCredential = async () => {
     if (!address) return;
     setChecking(true);
+    setCheckError(null);
     try {
       const addressHashHex = BigInt(addressToField(address)).toString(16).padStart(64, "0");
-      const active = await hasCredential(addressHashHex);
+      const active = await hasCredential(addressHashHex, address);
       setCredentialActive(active);
-    } catch {
+    } catch (err: any) {
       setCredentialActive(false);
+      setCheckError(err?.message ?? String(err));
     } finally {
       setChecking(false);
     }
@@ -102,6 +105,9 @@ const Dashboard = () => {
             ) : (
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">No credential found.</p>
+                {checkError && (
+                  <p className="text-xs text-red-500 break-all font-mono">{checkError}</p>
+                )}
                 <Button size="sm" onClick={() => navigate("/proof")}>Generate credential</Button>
               </div>
             )}

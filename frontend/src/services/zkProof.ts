@@ -12,8 +12,14 @@ const CIRCUITS_BASE = "/circuits";
 
 // ── Stellar address → BN254 field element ────────────────────────────────────
 
+// BN254 scalar field prime (for addressToField)
 const BN254_PRIME = BigInt(
   "21888242871839275222246405745257275088548364400416034343698204186575808495617"
+);
+
+// BN254 base field prime (for G1 point coordinate negation)
+const BN254_FP = BigInt(
+  "21888242871839275222246405745257275088696311157297823662689037894645226208583"
 );
 
 export function addressToField(address: string): string {
@@ -61,13 +67,24 @@ function g2ToHex(point: string[][]): string {
   );
 }
 
+// ── G1 affine point negation ─────────────────────────────────────────────────
+// Pre-negate pi_a so the contract can call pairing_check(proof.a, ...) directly.
+// Avoids soroban-sdk 25.1.0 Bn254G1Affine::neg() bug (Bytes vs BytesN<32> Val mismatch).
+
+function negG1Hex(point: string[]): string {
+  const x = BigInt(point[0]);
+  const y = BigInt(point[1]);
+  const negY = y === 0n ? 0n : BN254_FP - y;
+  return decToHex32(x.toString()) + decToHex32(negY.toString());
+}
+
 // ── Issuer signing (DEMO — client-side, testnet only) ────────────────────────
 
 async function issuerSign(commitmentHex: string): Promise<string> {
   const pkcs8Hex = import.meta.env.VITE_ISSUER_PRIVKEY_PKCS8;
   if (!pkcs8Hex) throw new Error("VITE_ISSUER_PRIVKEY_PKCS8 not set");
 
-  const pkcs8Bytes = hexToBytes(pkcs8Hex);
+  const pkcs8Bytes = Buffer.from(pkcs8Hex, "hex");
   const privateKey = await crypto.subtle.importKey(
     "pkcs8",
     pkcs8Bytes,
@@ -76,18 +93,10 @@ async function issuerSign(commitmentHex: string): Promise<string> {
     ["sign"]
   );
 
-  const commitmentBytes = hexToBytes(
-    commitmentHex.startsWith("0x") ? commitmentHex.slice(2) : commitmentHex
-  );
+  const h = commitmentHex.startsWith("0x") ? commitmentHex.slice(2) : commitmentHex;
+  const commitmentBytes = Buffer.from(h, "hex");
   const sig = await crypto.subtle.sign("Ed25519", privateKey, commitmentBytes);
   return Buffer.from(sig).toString("hex");
-}
-
-function hexToBytes(hex: string): Uint8Array {
-  const h = hex.startsWith("0x") ? hex.slice(2) : hex;
-  const b = new Uint8Array(h.length / 2);
-  for (let i = 0; i < b.length; i++) b[i] = parseInt(h.slice(i * 2, i * 2 + 2), 16);
-  return b;
 }
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -116,7 +125,7 @@ export interface AgeProofResult {
   addressHash: string;
   /** 64-byte hex — Issuer Ed25519 signature over commitment */
   issuerSig: string;
-  rawProof: object;
+  rawProof: unknown;
   rawPublicSignals: string[];
 }
 
@@ -150,7 +159,7 @@ export async function generateAgeProof(input: AgeProofInput): Promise<AgeProofRe
 
   return {
     proof: {
-      a: "0x" + g1ToHex((proof as any).pi_a),
+      a: "0x" + negG1Hex((proof as any).pi_a), // pre-negated: contract uses proof.a directly
       b: "0x" + g2ToHex((proof as any).pi_b),
       c: "0x" + g1ToHex((proof as any).pi_c),
     },
@@ -164,7 +173,7 @@ export async function generateAgeProof(input: AgeProofInput): Promise<AgeProofRe
   };
 }
 
-export async function verifyLocally(rawProof: object, rawPublicSignals: string[]): Promise<boolean> {
+export async function verifyLocally(rawProof: unknown, rawPublicSignals: string[]): Promise<boolean> {
   const vk = await fetch(`${CIRCUITS_BASE}/verification_key.json`).then((r) => r.json());
-  return groth16.verify(vk, rawPublicSignals, rawProof);
+  return groth16.verify(vk, rawPublicSignals, rawProof as object);
 }

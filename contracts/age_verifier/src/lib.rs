@@ -179,10 +179,12 @@ impl AgeVerifier {
         }
 
         // e(-A, B) · e(α, β) · e(vk_x, γ) · e(C, δ) == 1
-        #[allow(clippy::arithmetic_side_effects)]
-        let neg_a = -proof.a;
+        // Note: caller pre-negates pi_a in the frontend (pi_a.y → p - pi_a.y).
+        // This avoids the soroban-sdk 25.1.0 Bn254G1Affine::neg() bug where
+        // Bytes::slice().as_val() produces a Bytes Val but Bn254Fp::try_from_val
+        // expects BytesN<32> Val — causing UnreachableCodeReached in WASM.
         let valid = bn.pairing_check(
-            vec![&env, neg_a, vk_alpha, vk_x, proof.c],
+            vec![&env, proof.a, vk_alpha, vk_x, proof.c],
             vec![&env, proof.b, vk_beta, vk_gamma, vk_delta],
         );
 
@@ -217,6 +219,16 @@ impl AgeVerifier {
         // ── Mark nullifier used ──────────────────────────────────────────────
         env.storage().persistent().set(&DataKey::Nullifier(nullifier.clone()), &true);
         env.storage().persistent().extend_ttl(&DataKey::Nullifier(nullifier), 17_280, 518_400);
+
+        // ── Mint soulbound credential ─────────────────────────────────────────
+        // Keyed by the addressHash bytes (pub_inputs[2] as big-endian BytesN<32>).
+        // has_credential() looks up this same key.
+        let address_hash_bytes: BytesN<32> = pub_inputs
+            .get(2)
+            .ok_or(AgeVerifierError::MalformedPublicInputs)?
+            .to_bytes();
+        env.storage().persistent().set(&DataKey::Credential(address_hash_bytes.clone()), &true);
+        env.storage().persistent().extend_ttl(&DataKey::Credential(address_hash_bytes), 17_280, 518_400);
 
         // ── Emit event ───────────────────────────────────────────────────────
         env.events().publish(("identizy", "credential_verified"), true);

@@ -106,9 +106,13 @@ const ProofGeneration = () => {
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Date of birth</CardTitle>
-            <CardDescription>Used only to compute the ZK proof locally.</CardDescription>
+            <CardDescription>Used only to compute the ZK proof locally — never sent to any server.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Demo notice */}
+            <div className="rounded-md border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950 px-3 py-2 text-xs text-amber-800 dark:text-amber-200">
+              <span className="font-semibold">Hackathon demo:</span> In production this step is replaced by a full KYC document flow — the user uploads a government-issued ID and a selfie, and the Issuer verifies the document and signs the attestation. For this demo, you enter your date of birth directly.
+            </div>
             <input
               type="date"
               value={birthDateStr}

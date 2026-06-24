@@ -21,6 +21,23 @@ function hexToScBytes(hex: string): xdr.ScVal {
   return xdr.ScVal.scvBytes(Buffer.from(h, "hex"));
 }
 
+// Fr elements must be encoded as scvU256, not scvBytes.
+// Fr::try_from_val → U256::try_from_val expects U256Val, not BytesVal.
+// Passing scvBytes causes unwrap_optimized() → wasm32::unreachable → UnreachableCodeReached.
+function hexToScFr(hex: string): xdr.ScVal {
+  const h = (hex.startsWith("0x") ? hex.slice(2) : hex).padStart(64, "0");
+  const b = Buffer.from(h, "hex");
+  const view = new DataView(b.buffer, b.byteOffset, b.byteLength);
+  // UInt256Parts expects UnsignedHyper (from stellar-base) but BigInt works at runtime.
+  // The TypeScript definition is a version mismatch — runtime behavior is correct.
+  return xdr.ScVal.scvU256(new xdr.UInt256Parts({
+    hiHi: view.getBigUint64(0, false),
+    hiLo: view.getBigUint64(8, false),
+    loHi: view.getBigUint64(16, false),
+    loLo: view.getBigUint64(24, false),
+  } as any));
+}
+
 function buildProofScVal(result: AgeProofResult): xdr.ScVal {
   return xdr.ScVal.scvMap([
     new xdr.ScMapEntry({ key: xdr.ScVal.scvSymbol("a"), val: hexToScBytes(result.proof.a) }),
@@ -30,11 +47,11 @@ function buildProofScVal(result: AgeProofResult): xdr.ScVal {
 }
 
 function buildPubInputsScVal(result: AgeProofResult): xdr.ScVal {
-  // Vec<Fr> — 3 elements: [isOldEnough, commitment, addressHash]
+  // Vec<Fr> — each element must be scvU256 (Fr wraps U256)
   return xdr.ScVal.scvVec([
-    hexToScBytes(result.sigIsOldEnough),
-    hexToScBytes(result.commitment),
-    hexToScBytes(result.addressHash),
+    hexToScFr(result.sigIsOldEnough),
+    hexToScFr(result.commitment),
+    hexToScFr(result.addressHash),
   ]);
 }
 
@@ -101,12 +118,10 @@ export async function verifyAgeOnChain(
   throw new Error("Transaction confirmation timeout");
 }
 
-export async function hasCredential(addressHashHex: string): Promise<boolean> {
+export async function hasCredential(addressHashHex: string, callerAddress: string): Promise<boolean> {
   const server = new SorobanRpc.Server(RPC_URL);
   const contract = new Contract(CONTRACT_ID);
-  const account = await server.getAccount(
-    "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN" // read-only fee source
-  ).catch(() => null);
+  const account = await server.getAccount(callerAddress).catch(() => null);
   if (!account) return false;
 
   const tx = new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase: NETWORK_PASSPHRASE })
@@ -114,11 +129,14 @@ export async function hasCredential(addressHashHex: string): Promise<boolean> {
     .setTimeout(30)
     .build();
 
-  const sim = await server.simulateTransaction(tx);
-  if (SorobanRpc.Api.isSimulationError(sim)) return false;
-  const result = (sim as SorobanRpc.Api.SimulateTransactionSuccessResponse).result;
-  if (!result) return false;
-  return result.retval.switch() === xdr.ScValType.scvBool() && result.retval.b();
+  // Use any-typed sim to avoid depending on SorobanRpc.Api namespace, which can be
+  // undefined in Vite's CJS interop — the namespace ref throws before isSimulationError()
+  // is even called, silently returning false via the outer catch.
+  const sim: any = await server.simulateTransaction(tx);
+  if (sim.error) return false;
+  const retval = sim.result?.retval;
+  if (!retval) return false;
+  return retval.switch().name === "scvBool" && retval.b();
 }
 
 export { NETWORK, RPC_URL, CONTRACT_ID };
