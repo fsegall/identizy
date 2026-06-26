@@ -477,7 +477,7 @@ This architecture addresses each regulatory regime on its own terms:
 - **GDPR** — data subject retains revocable, auditable control via on-chain credential
 - **LGPD** — consent is a verifiable, time-stamped on-chain event, not a checkbox
 
-> This repository provides the ZK credential and on-chain consent primitive. A broader proprietary service layer covering EHR connectivity, de-identification pipeline, and research platform integration is under development as a separate product built on top of this infrastructure.
+> This repository provides the ZK credential and on-chain consent primitive. The same infrastructure applies to any domain requiring verified identity, scoped consent, and pseudonymous data flow — healthcare is one application. A broader service layer built on this primitive is under active development.
 
 ---
 
