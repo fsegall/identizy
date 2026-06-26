@@ -1,6 +1,9 @@
 # Reference implementation — kept locally for circuit reference only
 zk-threshold-proof-saas/
 
+# Proprietary business development materials — never commit
+business/
+
 # Environment files
 .env
 .env.local

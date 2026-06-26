@@ -453,6 +453,31 @@ Any service that today asks "are you 18+?" can replace that flow with a single b
 | DeFi protocols | Full KYC on every platform × 5 platforms | One KYC, one credential, infinite use |
 | Events & venues | Line, ID check per person | Ticket purchase gated at `has_credential` |
 | Online gambling | Platform stores passport copies | One contract call, zero document stored |
+| **Clinical research** | Identified patient records cross org perimeter → HIPAA/GDPR/LGPD liability | ZK credential + pseudonymous data delivery — identity never enters the platform |
+
+---
+
+## Extended Use Case: Privacy-Compliant Clinical Research
+
+> **"Consent once. Your health data flows to research — anonymized. You can stop it at any time."**
+
+Clinical research depends on patient data, but collecting identified records creates compliance liability under HIPAA, GDPR, and LGPD the moment that data crosses an organization's perimeter. The standard model — collect identified, de-identify internally — means the raw data was already received and held, which is itself a reportable event under a breach.
+
+Identizy's credential infrastructure provides the **ZK identity and consent primitive** for a de-identification-first architecture:
+
+| Phase | What happens | Identizy's role |
+|---|---|---|
+| **Once — identity & consent** | Patient proves eligibility and grants data access consent | ZK credential minted on Stellar; patient's identity never reaches the research platform |
+| **Ongoing — anonymized delivery** | Health records retrieved from source and stripped of identifiers before delivery | On-chain credential authorizes each retrieval; patient can revoke at any time |
+
+The research platform receives only pseudonymous, anonymized records. The **Stellar wallet address is the persistent pseudonymous subject identifier** — controlled exclusively by the patient's private key. No service holds a mapping between identity and health data.
+
+This architecture addresses each regulatory regime on its own terms:
+- **HIPAA** — identified data never enters the covered entity's perimeter
+- **GDPR** — data subject retains revocable, auditable control via on-chain credential
+- **LGPD** — consent is a verifiable, time-stamped on-chain event, not a checkbox
+
+> This repository provides the ZK credential and on-chain consent primitive. A broader proprietary service layer covering EHR connectivity, de-identification pipeline, and research platform integration is under development as a separate product built on top of this infrastructure.
 
 ---
 
