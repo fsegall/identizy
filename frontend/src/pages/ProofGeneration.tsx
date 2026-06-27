@@ -81,9 +81,14 @@ const ProofGeneration = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-lg space-y-6">
 
-        <button onClick={() => navigate("/connect")} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
-          <ArrowLeft className="h-4 w-4" /> Back
-        </button>
+        <div className="flex items-center justify-between">
+          <button onClick={() => navigate("/connect")} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="h-4 w-4" /> Back
+          </button>
+          <button onClick={() => navigate("/")} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <Shield className="h-4 w-4" /> Home
+          </button>
+        </div>
 
         <div className="text-center space-y-1">
           <div className="flex justify-center">
