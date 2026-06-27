@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useStellarWallet } from "@/contexts/StellarWalletContext";
-import { Shield, Wallet, ArrowRight, Lock } from "lucide-react";
+import { Shield, Wallet, ArrowRight, Lock, ArrowLeft } from "lucide-react";
 
 const WalletConnect = () => {
   const navigate = useNavigate();
@@ -19,6 +19,10 @@ const WalletConnect = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-md space-y-6">
+        <button onClick={() => navigate("/")} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft className="h-4 w-4" /> Home
+        </button>
+
         <div className="text-center space-y-2">
           <div className="flex justify-center">
             <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
