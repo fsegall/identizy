@@ -15,17 +15,23 @@ function bytesToHex(bytes: Uint8Array): string {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
+  console.log(`[sign-commitment] ${req.method} ${new URL(req.url).pathname}`);
+
   try {
     const { commitment } = await req.json();
     if (typeof commitment !== 'string' || !/^(0x)?[0-9a-fA-F]{64}$/.test(commitment)) {
+      console.warn('[sign-commitment] invalid commitment:', commitment);
       return new Response(JSON.stringify({ error: 'commitment must be 32-byte hex' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
+    console.log('[sign-commitment] commitment:', commitment);
+
     const pkcs8Hex = Deno.env.get('ISSUER_PRIVKEY_PKCS8');
     if (!pkcs8Hex) {
+      console.error('[sign-commitment] ISSUER_PRIVKEY_PKCS8 not set');
       return new Response(JSON.stringify({ error: 'ISSUER_PRIVKEY_PKCS8 not set' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -45,11 +51,13 @@ Deno.serve(async (req) => {
     const sig = await crypto.subtle.sign({ name: 'Ed25519' }, key, msg as BufferSource);
     const signature = '0x' + bytesToHex(new Uint8Array(sig));
 
+    console.log('[sign-commitment] signed ok, sig length:', new Uint8Array(sig).length);
+
     return new Response(JSON.stringify({ signature }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (err) {
-    console.error('sign-commitment error:', err);
+    console.error('[sign-commitment] error:', err);
     return new Response(JSON.stringify({ error: (err as Error).message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
