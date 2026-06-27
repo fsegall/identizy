@@ -78,25 +78,25 @@ function negG1Hex(point: string[]): string {
   return decToHex32(x.toString()) + decToHex32(negY.toString());
 }
 
-// ── Issuer signing (DEMO — client-side, testnet only) ────────────────────────
+// ── Issuer signing — calls Cloudflare Worker (private key never in browser) ───
 
 async function issuerSign(commitmentHex: string): Promise<string> {
-  const pkcs8Hex = import.meta.env.VITE_ISSUER_PRIVKEY_PKCS8;
-  if (!pkcs8Hex) throw new Error("VITE_ISSUER_PRIVKEY_PKCS8 not set");
+  const signerUrl = import.meta.env.VITE_SIGNER_URL;
+  if (!signerUrl) throw new Error("VITE_SIGNER_URL not set");
 
-  const pkcs8Bytes = Buffer.from(pkcs8Hex, "hex");
-  const privateKey = await crypto.subtle.importKey(
-    "pkcs8",
-    pkcs8Bytes,
-    { name: "Ed25519" },
-    false,
-    ["sign"]
-  );
+  const res = await fetch(signerUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ commitment: commitmentHex }),
+  });
 
-  const h = commitmentHex.startsWith("0x") ? commitmentHex.slice(2) : commitmentHex;
-  const commitmentBytes = Buffer.from(h, "hex");
-  const sig = await crypto.subtle.sign("Ed25519", privateKey, commitmentBytes);
-  return Buffer.from(sig).toString("hex");
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Signer error ${res.status}: ${err}`);
+  }
+
+  const { signature } = await res.json<{ signature: string }>();
+  return signature;
 }
 
 // ── Types ─────────────────────────────────────────────────────────────────────
