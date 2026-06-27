@@ -1,6 +1,0 @@
-name = "identizy-sign-commitment"
-main = "index.ts"
-compatibility_date = "2025-01-01"
-
-# ISSUER_PRIVKEY_PKCS8 must be set as a secret — never in this file:
-# wrangler secret put ISSUER_PRIVKEY_PKCS8
