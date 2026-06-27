@@ -38,7 +38,7 @@ The system follows the **W3C Verifiable Credentials** trust model:
 ### 2026-06-24 — First ZK Proof on Stellar Mainnet
 - **Deployed to Stellar mainnet** — Contract ID: `CBPG3KIS6NEGWANQFEKWKFYFENECUWG4KLJZ7KN25SCPKODHFO33MMTY`
 - **First Groth16 proof verified on-chain** — tx `0d8687d641401ed1bbc98df2cb6fab67c02abeb6bd5fa4762774afba3ac2b207`
-- Proof submitted via CLI script, not yet via frontend
+- Proof submitted via frontend running locally (localhost:8080)
 
 ### 2026-06-27 — Full Production Flow End-to-End
 - **Frontend deployed** — https://identizy.lovable.app (React/Vite, Lovable Cloud, mainnet env)
