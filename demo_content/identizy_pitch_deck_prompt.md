@@ -21,24 +21,34 @@ Visual: shield motif with cryptographic/blockchain aesthetic
 **Slide 2 — The Problem**
 Title: "Identity Verification Trades Privacy for Trust"
 
-Three bullets:
-- Every service that checks your age, citizenship, or eligibility asks you to hand over a document — passport, driver's license, selfie — and stores it
-- That data gets held, leaked, and sold. A 2023 breach at a KYC provider exposed 1.1 million identity documents from financial institutions worldwide
-- Web3 promised user-owned identity, but most dApps still redirect to centralized KYC flows that contradict the whole premise
+Two sections:
 
-Bottom note: "You prove who you are dozens of times. Each time, you give away more than necessary."
+"Every Service Takes Your Documents"
+Every service that checks your age, citizenship, or eligibility asks you to hand over a document — passport, driver's license, selfie — and stores it.
+
+"Data Gets Held, Leaked, and Sold"
+A 2023 breach at a KYC provider exposed 1.1 million identity documents from financial institutions worldwide.
+
+Every platform that requires compliance runs its own KYC — and stores your documents.
+
+Bottom note: "You prove who you are dozens of times. Each time, you give away more than necessary. The more services you use, the more copies of your identity exist."
 
 ---
 
 **Slide 3 — The Solution**
-Title: "Prove It Once. Use It Everywhere."
+Title: "KYC Once. Verified Everywhere. No Copies."
+
+Transition line (bridge from problem):
+Identizy collapses that into one credential. KYC once. Verified everywhere. No copies.
+
+Title below: "Prove It Once. Use It Everywhere."
 
 One paragraph:
-Identizy lets users verify their age — or any other credential — once with a real document. A cryptographic proof is generated in their browser and verified by a Stellar smart contract. The result is a soulbound credential tied to their wallet address. Any service can check it with a single blockchain query. No document stored. No Identizy server involved. No re-verification.
+Identizy lets users verify their age — or any credential — once with a real document. A cryptographic proof is generated in their browser and verified by a Stellar smart contract. The result is a soulbound credential tied to their wallet address. Any service can check it with a single blockchain query. No document stored. No Identizy server involved. No re-verification.
 
 Key properties (three icons):
-- 🔒 Zero-Knowledge: your birthdate never leaves your device
-- ⛓️ On-chain: credential lives on Stellar, verifiable by anyone
+- 🔒 Zero-Knowledge: your birthdate never leaves your device after the initial verification
+- ⛓️ On-chain: credential lives on Stellar, verifiable by anyone, owned by no one
 - ♾️ Reusable: one credential, infinite services, forever
 
 ---
@@ -49,7 +59,7 @@ Title: "Three Steps. One Credential. No Data Stored."
 Visual flow (left to right):
 
 Step 1 — KYC Once:
-User uploads a government ID to a licensed KYC provider. Provider verifies the document and signs a cryptographic attestation: "this person is over 18."
+User uploads a government ID to a licensed KYC provider. Provider verifies the document, signs a cryptographic attestation ("this person is over 18"), and discards the raw document.
 
 Step 2 — Generate ZK Proof:
 User's browser computes a Groth16 zero-knowledge proof using the attestation. The proof mathematically confirms age eligibility without revealing the birthdate. Takes seconds.
@@ -57,7 +67,7 @@ User's browser computes a Groth16 zero-knowledge proof using the attestation. Th
 Step 3 — Mint Credential on Stellar:
 Proof submitted to a Soroban smart contract. Contract verifies the proof on-chain using BN254 elliptic curve pairing (Protocol 25). Credential minted — soulbound to the user's wallet address.
 
-Result: Any third-party service calls `has_credential(address)` → `true`. Done.
+Result: Any third-party service calls `has_credential(address)` → `true`. Done. No additional KYC. No documents stored anywhere.
 
 ---
 
