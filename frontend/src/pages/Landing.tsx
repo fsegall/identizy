@@ -109,7 +109,7 @@ const Landing = () => {
             className="flex items-center gap-2"
           >
             <Wallet className="h-4 w-4" />
-            Connect Wallet
+            {t('nav.connectWallet')}
           </Button>
         </div>
       </nav>
@@ -180,16 +180,16 @@ const Landing = () => {
       <section id="demo" className="py-20 px-6 bg-muted/30">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">See It In Action</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('demo.title')}</h2>
             <p className="text-lg text-muted-foreground">
-              Watch the live demo and explore the full pitch deck.
+              {t('demo.subtitle')}
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Video */}
             <div className="flex flex-col gap-3">
-              <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">Demo Video</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">{t('demo.videoLabel')}</h3>
               {DEMO_VIDEO_EMBED_URL ? (
                 <div className="relative w-full rounded-xl overflow-hidden border shadow-lg" style={{ paddingTop: '56.25%' }}>
                   <iframe
@@ -204,7 +204,7 @@ const Landing = () => {
                 <div className="relative w-full rounded-xl border-2 border-dashed border-muted-foreground/30 bg-muted/50 flex flex-col items-center justify-center gap-3 text-muted-foreground" style={{ paddingTop: '56.25%' }}>
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                     <Play className="h-12 w-12 opacity-30" />
-                    <p className="text-sm">Demo video coming soon</p>
+                    <p className="text-sm">{t('demo.videoComingSoon')}</p>
                   </div>
                 </div>
               )}
@@ -212,7 +212,7 @@ const Landing = () => {
 
             {/* Pitch Deck */}
             <div className="flex flex-col gap-3">
-              <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">Pitch Deck</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">{t('demo.deckLabel')}</h3>
               <a
                 href={GAMMA_DECK_URL}
                 target="_blank"
@@ -228,14 +228,14 @@ const Landing = () => {
                       <Shield className="h-6 w-6 text-white" />
                     </div>
                     <h3 className="text-white text-xl md:text-2xl font-bold leading-tight">
-                      Prove who you are, once.<br />
+                      {t('demo.deckTagline1')}<br />
                       <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                        Be anyone, everywhere.
+                        {t('demo.deckTagline2')}
                       </span>
                     </h3>
-                    <p className="text-slate-400 text-sm">Identizy — Anonymous Credentials on Stellar</p>
+                    <p className="text-slate-400 text-sm">{t('demo.deckSubtitle')}</p>
                     <span className="mt-2 inline-flex items-center gap-1 text-xs text-slate-300 border border-slate-600 rounded-full px-3 py-1 group-hover:border-slate-400 transition-colors">
-                      View Pitch Deck <ArrowRight className="h-3 w-3" />
+                      {t('demo.viewDeck')} <ArrowRight className="h-3 w-3" />
                     </span>
                   </div>
                 </div>
@@ -336,8 +336,7 @@ const Landing = () => {
             <span className="font-semibold">Identizy</span>
           </div>
           <p className="text-sm text-muted-foreground">
-            © 2026 Identizy. Privacy-first identity verification. By{' '}
-            <span className="font-medium">Livre Solutions</span>
+            {t('footer.copyright')}
           </p>
         </div>
       </footer>

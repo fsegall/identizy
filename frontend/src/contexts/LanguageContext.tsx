@@ -17,49 +17,61 @@ const translations = {
     'nav.logout': 'Logout',
     'nav.backToHome': 'Back to Home',
     'nav.createAttestation': 'Create Attestation',
+    'nav.connectWallet': 'Connect Wallet',
     
     // Hero Section
     'hero.badge': 'Powered by Zero-Knowledge Technology',
-    'hero.title1': 'Verify Your Identity',
-    'hero.title2': 'Without Revealing It',
-    'hero.subtitle': 'Experience the future of digital identity with zero-knowledge proofs. Prove you\'re over 18 without sharing personal information, mint unique NFTs, and maintain complete privacy.',
-    'hero.startNow': 'Get Started Now',
+    'hero.title1': 'Prove What Matters',
+    'hero.title2': 'Without Revealing Who You Are',
+    'hero.subtitle': 'Identizy issues cryptographic credentials on Stellar — verify any attribute about yourself once, and use it everywhere, forever. Your data never leaves your device.',
+    'hero.startNow': 'Get Started',
     'hero.viewDemo': 'View Demo',
     'hero.private': '100% Private',
     'hero.instant': 'Instant Verification',
-    'hero.web3Ready': 'Web3 Ready',
-    
+    'hero.web3Ready': 'On Stellar',
+
     // Features
-    'features.title': 'Why Choose Identizy?',
-    'features.subtitle': 'Revolutionary technology that puts privacy and security at the forefront of digital identity verification.',
+    'features.title': 'Why Identizy?',
+    'features.subtitle': 'One credential. Any attribute. Infinite verifications — with zero personal data shared.',
     'features.zkProofs.title': 'Zero-Knowledge Proofs',
-    'features.zkProofs.desc': 'Prove your identity without revealing personal information using cutting-edge cryptographic techniques.',
-    'features.web3.title': 'Web3 Integration',
-    'features.web3.desc': 'Seamlessly connect with your favorite wallets and interact with blockchain networks.',
-    'features.privacy.title': 'Privacy First',
-    'features.privacy.desc': 'Your personal data remains private while still enabling verification and trust.',
-    'features.age.title': 'Age Verification',
-    'features.age.desc': 'Verify your age for age-restricted services without exposing your birth date.',
-    
+    'features.zkProofs.desc': 'Mathematical proof that a claim is true without revealing the underlying data. Computed in your browser — nothing leaves your device.',
+    'features.web3.title': 'Stellar Blockchain',
+    'features.web3.desc': 'Credentials live on Stellar. Any service verifies them with a single on-chain call — no Identizy server involved.',
+    'features.privacy.title': 'Privacy by Design',
+    'features.privacy.desc': 'Your document is verified once, then discarded. Only a cryptographic proof remains, bound to your wallet.',
+    'features.age.title': 'Any Credential',
+    'features.age.desc': 'Age, identity, income, residency — any verifiable attribute can become a reusable ZK credential.',
+
     // How it works
     'howItWorks.title': 'How It Works',
-    'howItWorks.subtitle': 'Get verified in just four simple steps',
-    'howItWorks.step1.title': 'Create Account',
-    'howItWorks.step1.desc': 'Sign up and create your secure identity profile',
-    'howItWorks.step2.title': 'Connect Wallet',
-    'howItWorks.step2.desc': 'Link your Web3 wallet for blockchain interactions',
-    'howItWorks.step3.title': 'Verify Identity',
-    'howItWorks.step3.desc': 'Complete ZK age verification privately and securely',
-    'howItWorks.step4.title': 'Mint NFT',
-    'howItWorks.step4.desc': 'Get your unique identity NFT as proof of verification',
-    
+    'howItWorks.subtitle': 'Verify once. Use forever.',
+    'howItWorks.step1.title': 'Connect Wallet',
+    'howItWorks.step1.desc': 'Connect your Stellar wallet — no account or sign-up required.',
+    'howItWorks.step2.title': 'Verify Once',
+    'howItWorks.step2.desc': 'A licensed provider verifies your document. Your data never reaches Identizy.',
+    'howItWorks.step3.title': 'Generate ZK Proof',
+    'howItWorks.step3.desc': 'Your browser computes a zero-knowledge proof. Your personal data never leaves your device.',
+    'howItWorks.step4.title': 'Use Anywhere',
+    'howItWorks.step4.desc': 'Your credential lives on Stellar. Any service checks it with one blockchain call — forever.',
+
+    // Demo Section
+    'demo.title': 'See It In Action',
+    'demo.subtitle': 'Watch the live demo and explore the full pitch deck.',
+    'demo.videoLabel': 'Demo Video',
+    'demo.videoComingSoon': 'Demo video coming soon',
+    'demo.deckLabel': 'Pitch Deck',
+    'demo.deckTagline1': 'Prove who you are, once.',
+    'demo.deckTagline2': 'Be anyone, everywhere.',
+    'demo.deckSubtitle': 'Identizy — Anonymous Credentials on Stellar',
+    'demo.viewDeck': 'View Pitch Deck',
+
     // CTA
-    'cta.title': 'Ready to Get Started?',
-    'cta.subtitle': 'Join thousands of users who trust Identizy for secure, private verification.',
-    'cta.button': 'Create Your Identity',
-    
+    'cta.title': 'Ready to Own Your Identity?',
+    'cta.subtitle': 'One credential. Complete privacy. No re-verification, ever.',
+    'cta.button': 'Create Your Credential',
+
     // Footer
-    'footer.copyright': '© 2024 Identizy. Privacy-first identity verification.',
+    'footer.copyright': '© 2026 Identizy. Privacy-first identity infrastructure. By Livre Solutions',
     
     // Create Attestation
     'createAttestation.title': 'Create Attestation',
@@ -115,49 +127,61 @@ const translations = {
     'nav.logout': 'Sair',
     'nav.backToHome': 'Voltar ao Início',
     'nav.createAttestation': 'Criar Atestado',
+    'nav.connectWallet': 'Conectar Carteira',
     
     // Hero Section
     'hero.badge': 'Tecnologia Zero-Knowledge',
-    'hero.title1': 'Verifique Sua Identidade',
-    'hero.title2': 'Sem Revelá-la',
-    'hero.subtitle': 'Experimente o futuro da identidade digital com provas zero-knowledge. Prove que você tem mais de 18 anos sem compartilhar informações pessoais, crie NFTs únicos e mantenha total privacidade.',
-    'hero.startNow': 'Começar Agora',
+    'hero.title1': 'Prove o Que Importa',
+    'hero.title2': 'Sem Revelar Quem Você É',
+    'hero.subtitle': 'O Identizy emite credenciais criptográficas na Stellar — verifique qualquer atributo sobre você uma vez e use em qualquer lugar, para sempre. Seus dados nunca saem do seu dispositivo.',
+    'hero.startNow': 'Começar',
     'hero.viewDemo': 'Ver Demo',
     'hero.private': '100% Privado',
     'hero.instant': 'Verificação Instantânea',
-    'hero.web3Ready': 'Pronto para Web3',
-    
+    'hero.web3Ready': 'Na Stellar',
+
     // Features
-    'features.title': 'Por que Escolher Identizy?',
-    'features.subtitle': 'Tecnologia revolucionária que coloca privacidade e segurança na vanguarda da verificação de identidade digital.',
+    'features.title': 'Por que Identizy?',
+    'features.subtitle': 'Uma credencial. Qualquer atributo. Verificações infinitas — sem compartilhar dados pessoais.',
     'features.zkProofs.title': 'Provas Zero-Knowledge',
-    'features.zkProofs.desc': 'Prove sua identidade sem revelar informações pessoais usando técnicas criptográficas de ponta.',
-    'features.web3.title': 'Integração Web3',
-    'features.web3.desc': 'Conecte-se perfeitamente com suas carteiras favoritas e interaja com redes blockchain.',
-    'features.privacy.title': 'Privacidade em Primeiro Lugar',
-    'features.privacy.desc': 'Seus dados pessoais permanecem privados enquanto ainda permitem verificação e confiança.',
-    'features.age.title': 'Verificação de Idade',
-    'features.age.desc': 'Verifique sua idade para serviços com restrição de idade sem expor sua data de nascimento.',
-    
+    'features.zkProofs.desc': 'Prova matemática de que uma afirmação é verdadeira sem revelar os dados subjacentes. Calculada no seu navegador — nada sai do seu dispositivo.',
+    'features.web3.title': 'Blockchain Stellar',
+    'features.web3.desc': 'Credenciais vivem na Stellar. Qualquer serviço as verifica com uma única chamada on-chain — sem servidor Identizy envolvido.',
+    'features.privacy.title': 'Privacidade por Design',
+    'features.privacy.desc': 'Seu documento é verificado uma vez e descartado. Apenas uma prova criptográfica permanece, vinculada à sua carteira.',
+    'features.age.title': 'Qualquer Credencial',
+    'features.age.desc': 'Idade, identidade, renda, residência — qualquer atributo verificável pode se tornar uma credencial ZK reutilizável.',
+
     // How it works
     'howItWorks.title': 'Como Funciona',
-    'howItWorks.subtitle': 'Seja verificado em apenas quatro passos simples',
-    'howItWorks.step1.title': 'Criar Conta',
-    'howItWorks.step1.desc': 'Cadastre-se e crie seu perfil de identidade seguro',
-    'howItWorks.step2.title': 'Conectar Carteira',
-    'howItWorks.step2.desc': 'Vincule sua carteira Web3 para interações blockchain',
-    'howItWorks.step3.title': 'Verificar Identidade',
-    'howItWorks.step3.desc': 'Complete a verificação ZK de idade de forma privada e segura',
-    'howItWorks.step4.title': 'Criar NFT',
-    'howItWorks.step4.desc': 'Obtenha seu NFT de identidade único como prova de verificação',
-    
+    'howItWorks.subtitle': 'Verifique uma vez. Use para sempre.',
+    'howItWorks.step1.title': 'Conectar Carteira',
+    'howItWorks.step1.desc': 'Conecte sua carteira Stellar — sem cadastro ou conta necessários.',
+    'howItWorks.step2.title': 'Verificar Uma Vez',
+    'howItWorks.step2.desc': 'Um provedor licenciado verifica seu documento. Seus dados nunca chegam ao Identizy.',
+    'howItWorks.step3.title': 'Gerar Prova ZK',
+    'howItWorks.step3.desc': 'Seu navegador calcula uma prova zero-knowledge. Seus dados pessoais nunca saem do seu dispositivo.',
+    'howItWorks.step4.title': 'Usar em Qualquer Lugar',
+    'howItWorks.step4.desc': 'Sua credencial vive na Stellar. Qualquer serviço a consulta com uma chamada blockchain — para sempre.',
+
+    // Demo Section
+    'demo.title': 'Veja em Ação',
+    'demo.subtitle': 'Assista à demo ao vivo e explore o pitch deck completo.',
+    'demo.videoLabel': 'Vídeo Demo',
+    'demo.videoComingSoon': 'Vídeo demo em breve',
+    'demo.deckLabel': 'Pitch Deck',
+    'demo.deckTagline1': 'Prove quem você é, uma vez.',
+    'demo.deckTagline2': 'Seja qualquer pessoa, em qualquer lugar.',
+    'demo.deckSubtitle': 'Identizy — Credenciais Anônimas na Stellar',
+    'demo.viewDeck': 'Ver Pitch Deck',
+
     // CTA
-    'cta.title': 'Pronto para Começar?',
-    'cta.subtitle': 'Junte-se a milhares de usuários que confiam no Identizy para verificação segura e privada.',
-    'cta.button': 'Crie Sua Identidade',
-    
+    'cta.title': 'Pronto para Ter Sua Identidade?',
+    'cta.subtitle': 'Uma credencial. Privacidade total. Sem re-verificação, nunca.',
+    'cta.button': 'Criar Minha Credencial',
+
     // Footer
-    'footer.copyright': '© 2024 Identizy. Verificação de identidade com privacidade em primeiro lugar.',
+    'footer.copyright': '© 2026 Identizy. Infraestrutura de identidade com privacidade em primeiro lugar. By Livre Solutions',
     
     // Create Attestation
     'createAttestation.title': 'Criar Atestado',
