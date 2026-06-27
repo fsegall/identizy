@@ -10,15 +10,19 @@ A zero-knowledge identity system on Stellar that lets users verify their age wit
 
 ## Live Demo — Stellar Mainnet ✅
 
-> The full end-to-end flow is **working on Stellar mainnet** as of June 24, 2026.
+> The full end-to-end flow is **live in production** as of June 27, 2026.
+
+**Try it:** https://identizy.lovable.app
 
 ### Mainnet (Public Network)
 
 | | |
 |---|---|
+| **App** | https://identizy.lovable.app |
 | **Contract** | `CBPG3KIS6NEGWANQFEKWKFYFENECUWG4KLJZ7KN25SCPKODHFO33MMTY` |
 | **Explorer** | https://stellar.expert/explorer/public/contract/CBPG3KIS6NEGWANQFEKWKFYFENECUWG4KLJZ7KN25SCPKODHFO33MMTY |
-| **Proof tx** | https://stellar.expert/explorer/public/tx/0d8687d641401ed1bbc98df2cb6fab67c02abeb6bd5fa4762774afba3ac2b207 |
+| **Production tx (June 27)** | https://stellar.expert/explorer/public/tx/91c3a617620fb76e02197ca4cbe053fd4c5d9527eaa2562cdf593d677370d591 |
+| **First proof tx (June 24)** | https://stellar.expert/explorer/public/tx/0d8687d641401ed1bbc98df2cb6fab67c02abeb6bd5fa4762774afba3ac2b207 |
 | **Network** | Stellar Mainnet (Protocol 25 "X-Ray") |
 
 ### Testnet

@@ -35,11 +35,36 @@ The system follows the **W3C Verifiable Credentials** trust model:
 - **Contract initialized** — real VK + Issuer Ed25519 pubkey uploaded on-chain
 - **Dev environment installed:** Rust 1.89, Circom 2.1.9, Stellar CLI 27.0, snarkjs 0.7.6
 
-### 🚧 Next Steps
+### 🚧 Next Steps (as of 2026-06-23)
 1. Frontend: Freighter wallet connection via Stellar Wallets Kit
 2. Frontend: client-side proof generation → submit to testnet contract
 3. End-to-end demo: browser proof → on-chain verification → credential issued
 4. Record 2–3 min demo video for hackathon submission
+
+---
+
+## Current State (as of 2026-06-27)
+
+### ✅ Full Production Flow — End-to-End on Mainnet
+- **Frontend deployed** — https://identizy.lovable.app (React/Vite, Lovable Cloud, mainnet env)
+- **Issuer signing** — Lovable Cloud edge function (`supabase/functions/sign-commitment/`)
+  - Private key stored as Supabase secret (`ISSUER_PRIVKEY_PKCS8`) — never in browser bundle
+  - `VITE_ISSUER_PRIVKEY_PKCS8` removed from frontend env vars
+  - `VITE_SIGNER_URL` points to edge function URL
+- **End-to-end flow verified in production (June 27):**
+  - Freighter wallet connects via Stellar Wallets Kit ✅
+  - Browser generates ZK proof (snarkjs WASM, ~305 constraints) ✅
+  - Edge function signs commitment (Ed25519, Web Crypto API on Deno) ✅
+  - Soroban contract verifies Groth16 proof + Ed25519 sig on Stellar mainnet ✅
+  - Dashboard shows "Age ≥ 18 verified" with active credential ✅
+- **Production transactions (mainnet):**
+  - June 24: `0d8687d641401ed1bbc98df2cb6fab67c02abeb6bd5fa4762774afba3ac2b207`
+  - June 27: `91c3a617620fb76e02197ca4cbe053fd4c5d9527eaa2562cdf593d677370d591`
+- **Dead code removed:** Supabase legacy hooks/pages, Ethereum providers, NFT minting
+
+### 🚧 Next Steps (as of 2026-06-27)
+1. Record 2–3 min demo video (script: `demo_content/video_script.md`) — June 28
+2. Submit on DoraHacks with repo URL + video — June 29, 12:00 PM PST
 
 ---
 
