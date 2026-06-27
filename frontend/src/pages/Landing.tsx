@@ -216,14 +216,33 @@ const Landing = () => {
             {/* Pitch Deck */}
             <div className="flex flex-col gap-3">
               <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">Pitch Deck</h3>
-              <div className="relative w-full rounded-xl overflow-hidden border shadow-lg" style={{ paddingTop: '56.25%' }}>
-                <iframe
-                  src={PITCH_DECK_EMBED_URL}
-                  className="absolute inset-0 w-full h-full"
-                  allowFullScreen
-                  title="Identizy Pitch Deck"
-                />
-              </div>
+              <a
+                href="https://gamma.app/docs/Prove-who-you-are-once-Be-anyone-everywhere-ywt409gzkanp3a8"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group block"
+              >
+                <div
+                  className="relative w-full rounded-xl overflow-hidden border shadow-lg transition-transform duration-200 group-hover:scale-[1.02]"
+                  style={{ paddingTop: '56.25%' }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 flex flex-col items-center justify-center gap-4 p-8 text-center">
+                    <div className="w-10 h-10 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center">
+                      <Shield className="h-6 w-6 text-white" />
+                    </div>
+                    <h3 className="text-white text-xl md:text-2xl font-bold leading-tight">
+                      Prove who you are, once.<br />
+                      <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                        Be anyone, everywhere.
+                      </span>
+                    </h3>
+                    <p className="text-slate-400 text-sm">Identizy — Anonymous Credentials on Stellar</p>
+                    <span className="mt-2 inline-flex items-center gap-1 text-xs text-slate-300 border border-slate-600 rounded-full px-3 py-1 group-hover:border-slate-400 transition-colors">
+                      View Pitch Deck <ArrowRight className="h-3 w-3" />
+                    </span>
+                  </div>
+                </div>
+              </a>
             </div>
           </div>
         </div>
