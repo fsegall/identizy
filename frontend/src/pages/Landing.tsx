@@ -17,11 +17,8 @@ import {
   Plus,
 } from 'lucide-react';
 
-// Replace with YouTube embed URL after uploading: https://www.youtube.com/embed/VIDEO_ID
-const DEMO_VIDEO_EMBED_URL = "";
-
-// Gamma pitch deck — embed URL derived from the public link
-const PITCH_DECK_EMBED_URL = "https://gamma.app/embed/ywt409gzkanp3a8";
+const DEMO_VIDEO_EMBED_URL = "https://www.youtube.com/embed/anN2X7D3MSs";
+const GAMMA_DECK_URL = "https://gamma.app/docs/Prove-who-you-are-once-Be-anyone-everywhere-ywt409gzkanp3a8";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -217,7 +214,7 @@ const Landing = () => {
             <div className="flex flex-col gap-3">
               <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">Pitch Deck</h3>
               <a
-                href="https://gamma.app/docs/Prove-who-you-are-once-Be-anyone-everywhere-ywt409gzkanp3a8"
+                href={GAMMA_DECK_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group block"
