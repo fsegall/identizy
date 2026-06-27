@@ -95,7 +95,7 @@ async function issuerSign(commitmentHex: string): Promise<string> {
     throw new Error(`Signer error ${res.status}: ${err}`);
   }
 
-  const { signature } = await res.json<{ signature: string }>();
+  const { signature } = (await res.json()) as { signature: string };
   return signature;
 }
 
