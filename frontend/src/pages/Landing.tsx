@@ -17,17 +17,18 @@ import {
   Plus,
 } from 'lucide-react';
 
-// Update with YouTube/Loom URL once the demo video is uploaded
-const DEMO_VIDEO_URL = "";
+// Replace with YouTube embed URL after uploading: https://www.youtube.com/embed/VIDEO_ID
+const DEMO_VIDEO_EMBED_URL = "";
+
+// Gamma pitch deck — embed URL derived from the public link
+const PITCH_DECK_EMBED_URL = "https://gamma.app/embed/ywt409gzkanp3a8";
 
 const Landing = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
 
   const handleViewDemo = () => {
-    if (DEMO_VIDEO_URL) {
-      window.open(DEMO_VIDEO_URL, '_blank', 'noopener,noreferrer');
-    }
+    document.getElementById('demo')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const features = [
@@ -154,7 +155,6 @@ const Landing = () => {
               size="lg"
               className="text-lg px-8 py-6 h-auto border-2 group"
               onClick={handleViewDemo}
-              disabled={!DEMO_VIDEO_URL}
             >
               <Play className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
               {t('hero.viewDemo')}
@@ -178,6 +178,56 @@ const Landing = () => {
           </div>
         </div>
       </div>
+
+      {/* Demo Section */}
+      <section id="demo" className="py-20 px-6 bg-muted/30">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">See It In Action</h2>
+            <p className="text-lg text-muted-foreground">
+              Watch the live demo and explore the full pitch deck.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Video */}
+            <div className="flex flex-col gap-3">
+              <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">Demo Video</h3>
+              {DEMO_VIDEO_EMBED_URL ? (
+                <div className="relative w-full rounded-xl overflow-hidden border shadow-lg" style={{ paddingTop: '56.25%' }}>
+                  <iframe
+                    src={DEMO_VIDEO_EMBED_URL}
+                    className="absolute inset-0 w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title="Identizy Demo"
+                  />
+                </div>
+              ) : (
+                <div className="relative w-full rounded-xl border-2 border-dashed border-muted-foreground/30 bg-muted/50 flex flex-col items-center justify-center gap-3 text-muted-foreground" style={{ paddingTop: '56.25%' }}>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                    <Play className="h-12 w-12 opacity-30" />
+                    <p className="text-sm">Demo video coming soon</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Pitch Deck */}
+            <div className="flex flex-col gap-3">
+              <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">Pitch Deck</h3>
+              <div className="relative w-full rounded-xl overflow-hidden border shadow-lg" style={{ paddingTop: '56.25%' }}>
+                <iframe
+                  src={PITCH_DECK_EMBED_URL}
+                  className="absolute inset-0 w-full h-full"
+                  allowFullScreen
+                  title="Identizy Pitch Deck"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Features Section */}
       <section className="py-20 px-6">
