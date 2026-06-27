@@ -14,7 +14,7 @@ Identizy changes that.
 
 Verify once with a real document. Receive a cryptographic credential on the Stellar blockchain. Use it anywhere, forever — with zero personal data shared.
 
-No documents stored. No servers involved. Just a simple yes or no, proven by math.
+Your document is verified once by a licensed KYC provider, then discarded. Only a cryptographic proof remains — on Stellar, under your control. When a service needs to check your age, it calls the blockchain directly. No Identizy server. No document. Just a yes or no, proven by math.
 
 🌐 Try it: https://identizy.lovable.app
 📊 Pitch deck: https://gamma.app/docs/Prove-who-you-are-once-Be-anyone-everywhere-ywt409gzkanp3a8

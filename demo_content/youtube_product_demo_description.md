@@ -8,7 +8,7 @@
 **Description:**
 
 ```
-Identizy lets you prove you're over 18 — once — using a zero-knowledge proof on the Stellar blockchain. Your birthdate never leaves your device. The credential lives on-chain forever. Any service can verify it with a single contract call.
+Identizy lets you prove you're over 18 — once — using a zero-knowledge proof on the Stellar blockchain. A licensed KYC provider verifies your document and discards it. A cryptographic credential is minted on Stellar. Any service can verify it with a single contract call — no document retained, no Identizy server in the loop.
 
 🔐 What this demo shows:
 • Freighter wallet connection on Stellar mainnet
