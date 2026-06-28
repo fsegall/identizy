@@ -67,7 +67,7 @@ The credential is:
 - **Privacy-preserving** — the on-chain token contains zero personal information
 - **Issuer-anchored** — only signed attestations from licensed providers generate valid proofs; you can't fake it with false data
 
-> **Coming next — Identity NFT:** The credential gains a face. You choose a visual persona — an avatar that represents you across every service without revealing who you are. Think of it as a disposable identity card: government-verified on the inside, anonymous on the outside, uniquely yours. Implemented as a SEP-0041 soulbound token, it appears natively in Freighter and Lobstr wallets, composable with any DeFi protocol on Stellar, and queryable via a standard `balance()` interface by any verifier.
+**Coming next — Identity NFT:** The credential gains a face. You choose a visual persona — an avatar that represents you across every service without revealing who you are. Think of it as a disposable identity card: government-verified on the inside, anonymous on the outside, uniquely yours. Implemented as a SEP-0041 soulbound token, it appears natively in Freighter and Lobstr wallets, composable with any DeFi protocol on Stellar, and queryable via a standard `balance()` interface by any verifier.
 
 ---
 
