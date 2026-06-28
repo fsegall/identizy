@@ -2,7 +2,7 @@
 
 > **"Prove who you are, once. Be anyone, everywhere."**
 
-A zero-knowledge identity system on Stellar that lets users verify their age with real documents **once** and receive a cryptographically address-bound credential — usable anonymously across any third-party service, forever.
+A zero-knowledge identity system on Stellar that lets users verify any attribute about themselves with real documents **once** and receive a cryptographically address-bound credential — usable anonymously across any third-party service, forever.
 
 **Hackathon:** [Stellar Hacks: Real-World ZK](https://dorahacks.io/hackathon/stellar-hacks-zk/detail) · Deadline: June 29, 2026
 
