@@ -181,7 +181,7 @@ Key property: Verifier learns NOTHING about Holder from Issuer.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  STEP 1 — KYC  (once, on our platform)                      │
+│  STEP 1 — KYC  (once, via a licensed provider)              │
 │                                                             │
 │  User uploads ID + selfie                                   │
 │  Platform verifies document authenticity                    │
