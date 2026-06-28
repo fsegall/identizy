@@ -39,7 +39,7 @@ A zero-knowledge identity system on Stellar that lets users verify any attribute
 - `[1u256, 20524…u256, 7946…u256]` — public signals: `isOldEnough=1`, `commitment`, `addressHash`
 - `→ true` — Soroban contract verified the ZK proof and issued the credential
 
-📹 **Demo video — coming June 28**
+📹 **Demo video:** https://www.awesomescreenshot.com/video/53905896?key=f65cae6c085039a1e87cc8850d644bab
 
 ---
 
@@ -125,7 +125,7 @@ Identizy never stores identity documents. The KYC provider discards them after v
 **Integration — 3 lines of code:**
 ```javascript
 import { Contract, rpc } from "@stellar/stellar-sdk";
-const contract = new Contract("CBY4RHLTT6CWB5K7M6IEMCI2BUVWAYAHOUS2XUG5HH2PDMDM77FIWFER");
+const contract = new Contract("CBPG3KIS6NEGWANQFEKWKFYFENECUWG4KLJZ7KN25SCPKODHFO33MMTY");
 const hasIt = await contract.call("has_credential", addressHashBytes);
 ```
 
@@ -141,7 +141,9 @@ No Identizy account. No Identizy API key. No Identizy server. Just Stellar.
                     ┌─────────────────┐
                     │    ISSUER       │
                     │  Identizy       │
-                    │  • Does KYC     │
+                    │  • KYC via      │
+                    │    licensed     │
+                    │    provider     │
                     │  • Signs        │
                     │    attestation  │
                     └────────┬────────┘
@@ -224,11 +226,11 @@ Key property: Verifier learns NOTHING about Holder from Issuer.
 ## Technical Architecture
 
 ```
-Off-chain                           On-chain (Stellar Testnet)
+Off-chain                           On-chain (Stellar Mainnet)
 ─────────────────────               ──────────────────────────
-Issuer (Node.js script)             Soroban Smart Contract
-  • Ed25519 keygen                    CBY4…WFER
-  • sign(commitment)                  • verify()
+Issuer (Supabase Edge Function)     Soroban Smart Contract
+  • Ed25519 sign(commitment)          CBPG3K…MMTY
+  • key stored as server secret       • verify()
         │                               – Groth16 BN254 pairing
         │ issuerSig                     – Ed25519 issuer check
         ▼                               – nullifier anti-replay
@@ -438,11 +440,11 @@ Connect Freighter wallet (testnet), enter a birthdate ≥ 18 years ago, click "G
 - [x] **End-to-end demo working** — browser → Freighter → on-chain ZK verification → credential
 - [x] **Dashboard: credential status** — `has_credential()` query on Stellar
 
-### ⏳ Remaining for Submission
+### ✅ Submitted
 
-- [ ] Record 2–3 min demo video
-- [ ] Push repo to GitHub (public)
-- [ ] Submit on DoraHacks with video link
+- [x] Demo video recorded and linked above
+- [x] Repo public on GitHub
+- [x] Submitted on DoraHacks — June 28, 2026
 
 ### 📋 Roadmap
 
