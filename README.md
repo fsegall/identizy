@@ -77,16 +77,24 @@ Identizy follows the [W3C Verifiable Credentials](https://www.w3.org/TR/vc-data-
 
 ### Issuer — Identizy Platform (us)
 
-> *"We checked the document. We vouch for this address."*
+> *"A licensed provider checked the document. We vouch for the cryptographic result."*
 
-**What the Issuer does:**
+The Issuer role has two layers:
+
+**Layer 1 — KYC Provider (licensed third party: Onfido, iDenfy, Jumio, etc.)**
 1. Receives the user's ID document + selfie
 2. Verifies authenticity (liveness check, document validity)
-3. Extracts the real `birthDate` from the document
-4. Receives the user's Stellar address (after the user proves they control it by signing a nonce)
-5. Computes `commitment = Poseidon(birthDate, stellarAddress)`
-6. Signs the commitment with the Issuer's Ed25519 private key: `issuerSig = sign(commitment)`
-7. Returns `issuerSig` to the user — this is the **KYC attestation seal**
+3. Extracts the verified attribute (e.g. `birthDate`) and discards the document
+4. Returns the verified data to Identizy — raw documents never reach us
+
+**Layer 2 — Identizy (credential issuer)**
+1. Receives the verified attribute from the KYC provider
+2. Receives the user's Stellar address (after the user proves they control it by signing a nonce)
+3. Computes `commitment = Poseidon(birthDate, stellarAddress)`
+4. Signs the commitment with the Issuer's Ed25519 private key: `issuerSig = sign(commitment)`
+5. Returns `issuerSig` to the user — this is the **credential attestation seal**
+
+Identizy never stores identity documents. The KYC provider discards them after verification. Only the cryptographic commitment persists.
 
 ---
 
