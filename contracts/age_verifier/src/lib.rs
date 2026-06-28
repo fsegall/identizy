@@ -45,10 +45,18 @@ pub enum AgeVerifierError {
     WithdrawAlreadyPending = 8,  // request_withdraw already in flight
     WithdrawNotPending    = 9,   // execute/cancel called with no pending request
     WithdrawTimelockActive = 10, // timelock has not expired yet
+    InvalidFeeAmount       = 11, // fee < 0 or fee > MAX_FEE
 }
 
 // 48h at ~5s per ledger
 const WITHDRAW_DELAY_LEDGERS: u32 = 34_560;
+
+// Instance storage TTL: bump to 30 days if below 1 day
+const TTL_MIN:  u32 = 17_280;   // ~1 day
+const TTL_MAX:  u32 = 518_400;  // ~30 days
+
+// Maximum issuance fee: 10.00 USDC (prevents griefing via fee DoS)
+const MAX_FEE: i128 = 100_000_000;
 
 // ── Storage keys ─────────────────────────────────────────────────────────────
 
@@ -130,6 +138,10 @@ impl AgeVerifier {
         if env.storage().instance().has(&DataKey::Vk) {
             return Err(AgeVerifierError::AlreadyInitialized);
         }
+        if fee_amount < 0 || fee_amount > MAX_FEE {
+            return Err(AgeVerifierError::InvalidFeeAmount);
+        }
+        env.storage().instance().extend_ttl(TTL_MIN, TTL_MAX);
         env.storage().instance().set(&DataKey::Vk, &vk);
         env.storage().instance().set(&DataKey::IssuerPubKey, &issuer_pub_key);
         env.storage().instance().set(&DataKey::Admin, &admin);
@@ -155,6 +167,10 @@ impl AgeVerifier {
         if env.storage().instance().has(&DataKey::Admin) {
             return Err(AgeVerifierError::AlreadyInitialized);
         }
+        if fee_amount < 0 || fee_amount > MAX_FEE {
+            return Err(AgeVerifierError::InvalidFeeAmount);
+        }
+        env.storage().instance().extend_ttl(TTL_MIN, TTL_MAX);
         env.storage().instance().set(&DataKey::Admin, &admin);
         env.storage().instance().set(&DataKey::Treasury, &treasury);
         env.storage().instance().set(&DataKey::UsdcToken, &usdc_token);
@@ -178,6 +194,7 @@ impl AgeVerifier {
         issuer_sig: BytesN<64>,
     ) -> Result<bool, AgeVerifierError> {
         caller.require_auth();
+        env.storage().instance().extend_ttl(TTL_MIN, TTL_MAX);
 
         // ── Load state ───────────────────────────────────────────────────────
         let stored_vk: StoredVk = env
@@ -316,17 +333,23 @@ impl AgeVerifier {
             .get(&DataKey::Admin)
             .ok_or(AgeVerifierError::NotInitialized)?;
         admin.require_auth();
+        env.storage().instance().extend_ttl(TTL_MIN, TTL_MAX);
         env.storage().instance().set(&DataKey::Treasury, &new_treasury);
         Ok(())
     }
 
     /// Admin — update the issuance fee without redeploying.
     /// fee_amount in USDC units (7 decimals): 20_000_000 = 2.00 USDC. 0 = free.
+    /// Maximum fee: 100_000_000 (10.00 USDC) — enforced to prevent fee-based DoS.
     pub fn set_fee(env: Env, fee_amount: i128) -> Result<(), AgeVerifierError> {
         let admin: Address = env.storage().instance()
             .get(&DataKey::Admin)
             .ok_or(AgeVerifierError::NotInitialized)?;
         admin.require_auth();
+        if fee_amount < 0 || fee_amount > MAX_FEE {
+            return Err(AgeVerifierError::InvalidFeeAmount);
+        }
+        env.storage().instance().extend_ttl(TTL_MIN, TTL_MAX);
         env.storage().instance().set(&DataKey::Fee, &fee_amount);
         Ok(())
     }
@@ -344,15 +367,15 @@ impl AgeVerifier {
             .get(&DataKey::Admin)
             .ok_or(AgeVerifierError::NotInitialized)?;
         admin.require_auth();
-        if env.storage().instance().has(&DataKey::PendingWithdrawal) {
+        env.storage().instance().extend_ttl(TTL_MIN, TTL_MAX);
+        if env.storage().persistent().has(&DataKey::PendingWithdrawal) {
             return Err(AgeVerifierError::WithdrawAlreadyPending);
         }
         let executable_after = env.ledger().sequence() + WITHDRAW_DELAY_LEDGERS;
-        env.storage().instance().set(&DataKey::PendingWithdrawal, &PendingWithdrawalData {
-            to,
-            amount,
-            executable_after,
-        });
+        let data = PendingWithdrawalData { to, amount, executable_after };
+        env.storage().persistent().set(&DataKey::PendingWithdrawal, &data);
+        // TTL must outlive the 48h timelock + margin
+        env.storage().persistent().extend_ttl(&DataKey::PendingWithdrawal, WITHDRAW_DELAY_LEDGERS + 1000, WITHDRAW_DELAY_LEDGERS + 17_280);
         env.events().publish(("identizy", "withdraw_requested"), executable_after);
         Ok(())
     }
@@ -364,13 +387,14 @@ impl AgeVerifier {
             .get(&DataKey::Admin)
             .ok_or(AgeVerifierError::NotInitialized)?;
         admin.require_auth();
-        let pending: PendingWithdrawalData = env.storage().instance()
+        env.storage().instance().extend_ttl(TTL_MIN, TTL_MAX);
+        let pending: PendingWithdrawalData = env.storage().persistent()
             .get(&DataKey::PendingWithdrawal)
             .ok_or(AgeVerifierError::WithdrawNotPending)?;
         if env.ledger().sequence() < pending.executable_after {
             return Err(AgeVerifierError::WithdrawTimelockActive);
         }
-        env.storage().instance().remove(&DataKey::PendingWithdrawal);
+        env.storage().persistent().remove(&DataKey::PendingWithdrawal);
         let usdc_token: Address = env.storage().instance()
             .get(&DataKey::UsdcToken)
             .ok_or(AgeVerifierError::NotInitialized)?;
@@ -386,17 +410,18 @@ impl AgeVerifier {
             .get(&DataKey::Admin)
             .ok_or(AgeVerifierError::NotInitialized)?;
         admin.require_auth();
-        if !env.storage().instance().has(&DataKey::PendingWithdrawal) {
+        env.storage().instance().extend_ttl(TTL_MIN, TTL_MAX);
+        if !env.storage().persistent().has(&DataKey::PendingWithdrawal) {
             return Err(AgeVerifierError::WithdrawNotPending);
         }
-        env.storage().instance().remove(&DataKey::PendingWithdrawal);
+        env.storage().persistent().remove(&DataKey::PendingWithdrawal);
         env.events().publish(("identizy", "withdraw_cancelled"), true);
         Ok(())
     }
 
     /// Return the pending withdrawal request, if any.
     pub fn get_pending_withdrawal(env: Env) -> Option<PendingWithdrawalData> {
-        env.storage().instance().get(&DataKey::PendingWithdrawal)
+        env.storage().persistent().get(&DataKey::PendingWithdrawal)
     }
 
     /// Admin — upgrade the contract WASM. Contract ID stays the same; all storage is preserved.
@@ -405,6 +430,7 @@ impl AgeVerifier {
             .get(&DataKey::Admin)
             .ok_or(AgeVerifierError::NotInitialized)?;
         admin.require_auth();
+        env.storage().instance().extend_ttl(TTL_MIN, TTL_MAX);
         env.deployer().update_current_contract_wasm(new_wasm_hash);
         Ok(())
     }
