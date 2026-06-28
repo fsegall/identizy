@@ -191,8 +191,9 @@ fn setup(env: &Env) -> AgeVerifierClient<'_> {
 // Initialize with fee=0 and dummy addresses — no USDC token needed in tests.
 fn init(env: &Env, client: &AgeVerifierClient<'_>) {
     let admin    = Address::generate(env);
+    let treasury = Address::generate(env);
     let usdc_tok = Address::generate(env);
-    client.initialize(&test_vk(env), &test_issuer_pubkey(env), &admin, &usdc_tok, &0i128);
+    client.initialize(&test_vk(env), &test_issuer_pubkey(env), &admin, &treasury, &usdc_tok, &0i128);
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -204,8 +205,9 @@ fn test_double_initialize_rejected() {
     let client = setup(&env);
     init(&env, &client);
     let admin    = Address::generate(&env);
+    let treasury = Address::generate(&env);
     let usdc_tok = Address::generate(&env);
-    let result = client.try_initialize(&test_vk(&env), &test_issuer_pubkey(&env), &admin, &usdc_tok, &0i128);
+    let result = client.try_initialize(&test_vk(&env), &test_issuer_pubkey(&env), &admin, &treasury, &usdc_tok, &0i128);
     assert_eq!(result, Err(Ok(AgeVerifierError::AlreadyInitialized)));
 }
 

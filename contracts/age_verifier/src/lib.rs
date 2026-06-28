@@ -42,7 +42,13 @@ pub enum AgeVerifierError {
     AgeConstraintFailed   = 5,   // isOldEnough != 1
     InvalidIssuerSig      = 6,   // Ed25519 sig from Issuer rejected
     Unauthorized          = 7,   // caller is not the admin
+    WithdrawAlreadyPending = 8,  // request_withdraw already in flight
+    WithdrawNotPending    = 9,   // execute/cancel called with no pending request
+    WithdrawTimelockActive = 10, // timelock has not expired yet
 }
+
+// 48h at ~5s per ledger
+const WITHDRAW_DELAY_LEDGERS: u32 = 34_560;
 
 // ── Storage keys ─────────────────────────────────────────────────────────────
 
@@ -52,9 +58,21 @@ pub enum DataKey {
     IssuerPubKey,
     Nullifier(BytesN<32>),
     Credential(BytesN<32>),   // credential record keyed by address hash
-    Admin,                    // Address — can call set_fee / withdraw / upgrade
+    Admin,                    // Address — multisig; calls set_fee / set_treasury / upgrade
+    Treasury,                 // Address — receives fees directly; rotatable via set_treasury()
     UsdcToken,                // Address — USDC SAC contract on this network
     Fee,                      // i128 — USDC units (7 decimals). 20_000_000 = 2.00 USDC
+    PendingWithdrawal,        // PendingWithdrawalData — emergency withdrawal (timelock)
+}
+
+/// Pending withdrawal locked by a 48h timelock.
+/// Stored on request_withdraw(); cleared on execute_withdraw() or cancel_withdraw().
+#[contracttype]
+#[derive(Clone)]
+pub struct PendingWithdrawalData {
+    pub to:               Address,
+    pub amount:           i128,
+    pub executable_after: u32,   // ledger sequence number after which execution is allowed
 }
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -105,6 +123,7 @@ impl AgeVerifier {
         vk: StoredVk,
         issuer_pub_key: BytesN<32>,
         admin: Address,
+        treasury: Address,
         usdc_token: Address,
         fee_amount: i128,
     ) -> Result<(), AgeVerifierError> {
@@ -114,6 +133,7 @@ impl AgeVerifier {
         env.storage().instance().set(&DataKey::Vk, &vk);
         env.storage().instance().set(&DataKey::IssuerPubKey, &issuer_pub_key);
         env.storage().instance().set(&DataKey::Admin, &admin);
+        env.storage().instance().set(&DataKey::Treasury, &treasury);
         env.storage().instance().set(&DataKey::UsdcToken, &usdc_token);
         env.storage().instance().set(&DataKey::Fee, &fee_amount);
         Ok(())
@@ -125,6 +145,7 @@ impl AgeVerifier {
     pub fn configure_fees(
         env: Env,
         admin: Address,
+        treasury: Address,
         usdc_token: Address,
         fee_amount: i128,
     ) -> Result<(), AgeVerifierError> {
@@ -135,6 +156,7 @@ impl AgeVerifier {
             return Err(AgeVerifierError::AlreadyInitialized);
         }
         env.storage().instance().set(&DataKey::Admin, &admin);
+        env.storage().instance().set(&DataKey::Treasury, &treasury);
         env.storage().instance().set(&DataKey::UsdcToken, &usdc_token);
         env.storage().instance().set(&DataKey::Fee, &fee_amount);
         Ok(())
@@ -166,17 +188,21 @@ impl AgeVerifier {
             .storage().instance().get(&DataKey::IssuerPubKey)
             .ok_or(AgeVerifierError::NotInitialized)?;
 
-        // ── Collect USDC issuance fee ────────────────────────────────────────
+        // ── Forward USDC issuance fee directly to treasury ───────────────────
+        // Fees never accumulate in the contract — forwarded immediately to treasury.
+        // This eliminates the contract as a custody target; the treasury address
+        // is an independent account not involved in contract or app logic.
         // Fee is 0 during launch / if not configured — skipped entirely.
-        // The token.transfer() call requires caller to authorize the sub-call;
-        // the Soroban auth framework bundles this into the same transaction.
         let fee: i128 = env.storage().instance().get(&DataKey::Fee).unwrap_or(0);
         if fee > 0 {
             let usdc_token: Address = env.storage().instance()
                 .get(&DataKey::UsdcToken)
                 .ok_or(AgeVerifierError::NotInitialized)?;
+            let treasury: Address = env.storage().instance()
+                .get(&DataKey::Treasury)
+                .ok_or(AgeVerifierError::NotInitialized)?;
             token::Client::new(&env, &usdc_token)
-                .transfer(&caller, &env.current_contract_address(), &fee);
+                .transfer(&caller, &treasury, &fee);
         }
 
         // ── Anti-replay ──────────────────────────────────────────────────────
@@ -277,6 +303,23 @@ impl AgeVerifier {
         env.storage().instance().get(&DataKey::Fee).unwrap_or(0)
     }
 
+    /// Return the current treasury address.
+    pub fn get_treasury(env: Env) -> Option<Address> {
+        env.storage().instance().get(&DataKey::Treasury)
+    }
+
+    /// Admin — rotate the treasury address. Affects only future fee collections;
+    /// funds already at the old treasury address are unaffected.
+    /// Does not require a timelock — no funds move, only the destination changes.
+    pub fn set_treasury(env: Env, new_treasury: Address) -> Result<(), AgeVerifierError> {
+        let admin: Address = env.storage().instance()
+            .get(&DataKey::Admin)
+            .ok_or(AgeVerifierError::NotInitialized)?;
+        admin.require_auth();
+        env.storage().instance().set(&DataKey::Treasury, &new_treasury);
+        Ok(())
+    }
+
     /// Admin — update the issuance fee without redeploying.
     /// fee_amount in USDC units (7 decimals): 20_000_000 = 2.00 USDC. 0 = free.
     pub fn set_fee(env: Env, fee_amount: i128) -> Result<(), AgeVerifierError> {
@@ -288,18 +331,72 @@ impl AgeVerifier {
         Ok(())
     }
 
-    /// Admin — withdraw accumulated USDC to any address.
-    pub fn withdraw(env: Env, to: Address, amount: i128) -> Result<(), AgeVerifierError> {
+    /// Admin — initiate a withdrawal. Funds are locked for 48h before execution.
+    ///
+    /// Security model: if the admin key is compromised, this 48h window gives the
+    /// team time to detect the attack and rotate the key (via Stellar account management)
+    /// before `execute_withdraw()` can be called with the old compromised key.
+    ///
+    /// Recommended: configure the admin Stellar account as a 2-of-3 multisig so that
+    /// a single compromised key cannot even reach this call unilaterally.
+    pub fn request_withdraw(env: Env, to: Address, amount: i128) -> Result<(), AgeVerifierError> {
         let admin: Address = env.storage().instance()
             .get(&DataKey::Admin)
             .ok_or(AgeVerifierError::NotInitialized)?;
         admin.require_auth();
+        if env.storage().instance().has(&DataKey::PendingWithdrawal) {
+            return Err(AgeVerifierError::WithdrawAlreadyPending);
+        }
+        let executable_after = env.ledger().sequence() + WITHDRAW_DELAY_LEDGERS;
+        env.storage().instance().set(&DataKey::PendingWithdrawal, &PendingWithdrawalData {
+            to,
+            amount,
+            executable_after,
+        });
+        env.events().publish(("identizy", "withdraw_requested"), executable_after);
+        Ok(())
+    }
+
+    /// Admin — execute a previously requested withdrawal after the 48h timelock has expired.
+    /// Requires the current admin key — a rotated key blocks a compromised key from executing.
+    pub fn execute_withdraw(env: Env) -> Result<(), AgeVerifierError> {
+        let admin: Address = env.storage().instance()
+            .get(&DataKey::Admin)
+            .ok_or(AgeVerifierError::NotInitialized)?;
+        admin.require_auth();
+        let pending: PendingWithdrawalData = env.storage().instance()
+            .get(&DataKey::PendingWithdrawal)
+            .ok_or(AgeVerifierError::WithdrawNotPending)?;
+        if env.ledger().sequence() < pending.executable_after {
+            return Err(AgeVerifierError::WithdrawTimelockActive);
+        }
+        env.storage().instance().remove(&DataKey::PendingWithdrawal);
         let usdc_token: Address = env.storage().instance()
             .get(&DataKey::UsdcToken)
             .ok_or(AgeVerifierError::NotInitialized)?;
         token::Client::new(&env, &usdc_token)
-            .transfer(&env.current_contract_address(), &to, &amount);
+            .transfer(&env.current_contract_address(), &pending.to, &pending.amount);
         Ok(())
+    }
+
+    /// Admin — cancel a pending withdrawal request before the timelock expires.
+    /// Call this immediately after detecting a compromise to neutralize the attack.
+    pub fn cancel_withdraw(env: Env) -> Result<(), AgeVerifierError> {
+        let admin: Address = env.storage().instance()
+            .get(&DataKey::Admin)
+            .ok_or(AgeVerifierError::NotInitialized)?;
+        admin.require_auth();
+        if !env.storage().instance().has(&DataKey::PendingWithdrawal) {
+            return Err(AgeVerifierError::WithdrawNotPending);
+        }
+        env.storage().instance().remove(&DataKey::PendingWithdrawal);
+        env.events().publish(("identizy", "withdraw_cancelled"), true);
+        Ok(())
+    }
+
+    /// Return the pending withdrawal request, if any.
+    pub fn get_pending_withdrawal(env: Env) -> Option<PendingWithdrawalData> {
+        env.storage().instance().get(&DataKey::PendingWithdrawal)
     }
 
     /// Admin — upgrade the contract WASM. Contract ID stays the same; all storage is preserved.
