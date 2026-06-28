@@ -19,7 +19,7 @@ A zero-knowledge identity system on Stellar that lets users verify any attribute
 | | |
 |---|---|
 | **App** | https://identizy.lovable.app |
-| **Contract** | `CBPG3KIS6NEGWANQFEKWKFYFENECUWG4KLJZ7KN25SCPKODHFO33MMTY` |
+| **Contract** | `CBPG3KIS6NEGWANQFEKWKFYFENECUWG4KLJZ7KN25SCPKODHFO33MMTY` (v1) · v2 deploy in progress |
 | **Explorer** | https://stellar.expert/explorer/public/contract/CBPG3KIS6NEGWANQFEKWKFYFENECUWG4KLJZ7KN25SCPKODHFO33MMTY |
 | **Production tx (June 27)** | https://stellar.expert/explorer/public/tx/91c3a617620fb76e02197ca4cbe053fd4c5d9527eaa2562cdf593d677370d591 |
 | **First proof tx (June 24)** | https://stellar.expert/explorer/public/tx/0d8687d641401ed1bbc98df2cb6fab67c02abeb6bd5fa4762774afba3ac2b207 |
@@ -127,7 +127,7 @@ Identizy never stores identity documents. The KYC provider discards them after v
 **Integration — 3 lines of code:**
 ```javascript
 import { Contract, rpc } from "@stellar/stellar-sdk";
-const contract = new Contract("CBPG3KIS6NEGWANQFEKWKFYFENECUWG4KLJZ7KN25SCPKODHFO33MMTY");
+const contract = new Contract("CBPG3KIS6NEGWANQFEKWKFYFENECUWG4KLJZ7KN25SCPKODHFO33MMTY"); // update to v2 ID when deployed
 const hasIt = await contract.call("has_credential", addressHashBytes);
 ```
 
@@ -272,15 +272,24 @@ Stats: 305 R1CS constraints · BN254/Groth16
 ### Contract Interface (`contracts/age_verifier/src/lib.rs`)
 
 ```rust
-// Initialize once after deploy — uploads VK + Issuer pubkey on-chain
-fn initialize(env: Env, vk: StoredVk, issuer_pub_key: BytesN<32>) -> Result<(), Error>
+// Initialize once after deploy — uploads VK + Issuer pubkey + admin controls on-chain
+fn initialize(
+    env: Env,
+    vk: StoredVk,
+    issuer_pub_key: BytesN<32>,
+    admin: Address,
+    treasury: Address,
+    usdc_token: Address,
+    fee_amount: i128,             // USDC units (7 decimals): 0 = free, 20_000_000 = $2.00
+) -> Result<(), Error>
 
 // Verify ZK proof + Issuer attestation → mint soulbound credential
-// pub_inputs = [isOldEnough: Fr, commitment: Fr, addressHash: Fr]
+// Forwards fee directly caller → treasury (contract never holds USDC)
 fn verify(
     env: Env,
+    caller: Address,              // user's Stellar address (for fee auth)
     proof: Groth16Proof,          // { a: G1, b: G2, c: G1 }
-    pub_inputs: Vec<Fr>,          // BN254 scalar field elements
+    pub_inputs: Vec<Fr>,          // [isOldEnough: Fr, commitment: Fr, addressHash: Fr]
     nullifier: BytesN<32>,        // random anti-replay token
     issuer_sig: BytesN<64>,       // Ed25519 sig over commitment bytes
 ) -> Result<bool, Error>
@@ -288,6 +297,21 @@ fn verify(
 // Query — called directly by third parties on Stellar, no Identizy API needed
 fn has_credential(env: Env, address_hash: BytesN<32>) -> bool
 fn is_nullifier_used(env: Env, nullifier: BytesN<32>) -> bool
+
+// Admin — fee & treasury management (no redeploy needed)
+fn set_fee(env: Env, fee_amount: i128) -> Result<(), Error>        // max: 10.00 USDC
+fn set_treasury(env: Env, new_treasury: Address) -> Result<(), Error>
+fn get_fee(env: Env) -> i128
+fn get_treasury(env: Env) -> Option<Address>
+
+// Admin — 48h timelocked withdrawal (residual contract balance only)
+fn request_withdraw(env: Env, to: Address, amount: i128) -> Result<(), Error>
+fn execute_withdraw(env: Env) -> Result<(), Error>                  // after 34,560 ledgers
+fn cancel_withdraw(env: Env) -> Result<(), Error>
+fn get_pending_withdrawal(env: Env) -> Option<PendingWithdrawalData>
+
+// Admin — in-place WASM upgrade (same contract ID, storage preserved)
+fn upgrade(env: Env, new_wasm_hash: BytesN<32>) -> Result<(), Error>
 ```
 
 ### Key Bug Fixes During Development

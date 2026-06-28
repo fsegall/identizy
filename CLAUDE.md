@@ -54,9 +54,26 @@ The system follows the **W3C Verifiable Credentials** trust model:
 - **Dead code removed:** Supabase legacy hooks/pages, Ethereum providers, NFT minting
 - **Landing page updated:** broader ZK identity pitch, full i18n (EN/PT), demo section
 
+### 2026-06-28 — Contract v2: Security Hardening + Monetization
+- **Security audit completed** — 3 vulnerabilities fixed, full liveness analysis (see `docs/security_audit.md`)
+  - Instance storage TTL extended on every write — prevents silent contract expiry
+  - PendingWithdrawal moved to persistent storage — survives 48h timelock window
+  - Fee validation added: non-negative + MAX_FEE = 10 USDC cap
+- **Monetization layer added** — USDC fee system, admin controls, 48h withdrawal timelock
+  - `verify()` forwards fee directly caller → treasury (contract never custodial)
+  - `set_fee()`, `set_treasury()` — live adjustment without redeploy
+  - `request_withdraw()` / `execute_withdraw()` / `cancel_withdraw()` — timelocked flush
+  - `upgrade()` — future WASM upgrades without new contract ID
+- **Fresh mainnet deploy pending** — new contract ID (replacing `CBPG3KIS6NEGWANQFEKWKFYFENECUWG4KLJZ7KN25SCPKODHFO33MMTY`)
+  - Old contract had no `upgrade()` — fresh deploy required; WASM larger (15 XLM resource fee)
+  - Deploy command: `stellar contract deploy --wasm target/.../age_verifier.wasm --source alice --network mainnet --rpc-url https://soroban-rpc.creit.tech ...`
+  - Initialize: `CONTRACT_ID=C... STELLAR_SECRET_KEY=S... ISSUER_PUBKEY=hex node scripts/initialize_contract.js`
+- **Plans documented:** `docs/monetization_plan.md`, `docs/security_audit.md`
+
 ### 🚧 Next Steps
-1. Record 2–3 min demo video (script: `demo_content/video_script.md`) — June 28
-2. Submit on DoraHacks with repo URL + video — June 29, 12:00 PM PST
+1. Transfer XLM to alice (`GBZFUMBDCDL7FL5VLD2IG4AEVWM4RYNXLOCEXWP72E33TLEIOADJMHMQ`) — need ~18 XLM total (resource fee ~15 XLM)
+2. Run deploy + initialize, update contract ID in CLAUDE.md + README + Lovable env vars
+3. Submit on DoraHacks with repo URL + video — June 29, 12:00 PM PST
 
 ---
 

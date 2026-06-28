@@ -2,17 +2,27 @@
 /**
  * initialize_contract.js — Initialize the AgeVerifier Soroban contract.
  *
- * Calls AgeVerifier.initialize(vk, issuer_pub_key) once after deploy.
- * Reads VK from circuits/age_verifier/verification_key.json.
- * Reads contract config from .env (CONTRACT_ID, STELLAR_SECRET_KEY).
+ * Calls AgeVerifier.initialize(vk, issuer_pub_key, admin, treasury, usdc_token, fee_amount)
+ * once after a fresh deploy. Reads VK from circuits/age_verifier/verification_key.json.
  *
  * Usage:
- *   node scripts/initialize_contract.js
+ *   CONTRACT_ID=C... STELLAR_SECRET_KEY=S... ISSUER_PUBKEY=hex node scripts/initialize_contract.js
  *
- * Env vars (from .env or shell):
- *   CONTRACT_ID          — Soroban contract address (C...)
- *   STELLAR_SECRET_KEY   — deployer secret key (S...)
- *   ISSUER_PUBKEY        — Ed25519 pubkey hex (32 bytes, no 0x)
+ * Required env vars:
+ *   CONTRACT_ID          — Soroban contract address (C...) from `stellar contract deploy`
+ *   STELLAR_SECRET_KEY   — deployer / initial admin secret key (S...)
+ *   ISSUER_PUBKEY        — 32-byte Ed25519 pubkey hex of the Issuer (from Supabase edge function)
+ *
+ * Optional env vars:
+ *   ADMIN_ADDRESS        — G... address for admin role (defaults to deployer's pubkey)
+ *   TREASURY_ADDRESS     — G... address for fee treasury (defaults to treasury-mainnet)
+ *   USDC_TOKEN           — Soroban contract ID for USDC SAC (placeholder at fee=0)
+ *   STELLAR_NETWORK      — "mainnet" or "testnet" (default: mainnet)
+ *   STELLAR_RPC_URL      — Soroban RPC endpoint
+ *
+ * To get ISSUER_PUBKEY from the Supabase edge function private key:
+ *   ISSUER_PRIVKEY=<raw_hex> node scripts/sign_commitment.js verify
+ *   (the first line of output shows the public key)
  */
 
 "use strict";
@@ -44,24 +54,24 @@ const {
   Address,
 } = require("@stellar/stellar-sdk");
 
-const CONTRACT_ID = process.env.CONTRACT_ID;
-const SECRET_KEY = process.env.STELLAR_SECRET_KEY;
-const NETWORK = process.env.STELLAR_NETWORK ?? "testnet";
-const RPC_URL =
-  process.env.STELLAR_TESTNET_RPC ?? "https://soroban-testnet.stellar.org";
+const CONTRACT_ID      = process.env.CONTRACT_ID;
+const SECRET_KEY       = process.env.STELLAR_SECRET_KEY;
+const ISSUER_PUBKEY    = process.env.ISSUER_PUBKEY;
+const ADMIN_ADDRESS    = process.env.ADMIN_ADDRESS;   // defaults to deployer pubkey
+const TREASURY_ADDRESS = process.env.TREASURY_ADDRESS || "GAT6U5MBLUBZG7OBM7G4E7M4VNAYR5IFKRFH4RFDGTK7AHBHDD535NLQ";
+const USDC_TOKEN       = process.env.USDC_TOKEN;      // placeholder at fee=0
+const NETWORK          = process.env.STELLAR_NETWORK  ?? "mainnet";
+const RPC_URL          = process.env.STELLAR_RPC_URL  ?? "https://soroban-rpc.creit.tech";
 
-// Test issuer pubkey (from scripts/sign_commitment.js keygen)
-// Replace with production key before mainnet
-const ISSUER_PUBKEY =
-  process.env.ISSUER_PUBKEY ??
-  "c06840fcf54853ed731c04eb3b4eb8f21bf4d5b23773f8c64b544a98a58d0571";
-
-if (!CONTRACT_ID || !SECRET_KEY) {
+if (!CONTRACT_ID || !SECRET_KEY || !ISSUER_PUBKEY) {
   console.error(
-    "Missing CONTRACT_ID or STELLAR_SECRET_KEY in .env\n" +
-      "Expected in .env:\n" +
-      "  CONTRACT_ID=CA7ZALWIDPVDBYSZXMO4WOM4INCWD7UUAZ3XJEQICWGY6H2JDLGGDKEO\n" +
-      "  STELLAR_SECRET_KEY=S..."
+    "Missing required env vars.\n" +
+    "Required:\n" +
+    "  CONTRACT_ID=C...          (from stellar contract deploy output)\n" +
+    "  STELLAR_SECRET_KEY=S...   (deployer / admin secret key)\n" +
+    "  ISSUER_PUBKEY=<hex>       (32-byte Ed25519 pubkey of the Issuer)\n" +
+    "\nExample:\n" +
+    "  CONTRACT_ID=C... STELLAR_SECRET_KEY=S... ISSUER_PUBKEY=abc123... node scripts/initialize_contract.js"
   );
   process.exit(1);
 }
@@ -145,6 +155,20 @@ function buildStoredVk(vkJson) {
   ]);
 }
 
+// ── ScVal helpers for new initialize params ───────────────────────────────
+
+function scAddress(addr) {
+  return new Address(addr).toScVal();
+}
+
+function scI128(value) {
+  const big = BigInt(value);
+  return xdr.ScVal.scvI128(new xdr.Int128Parts({
+    hi: BigInt.asIntN(64, big >> 64n),
+    lo: BigInt.asUintN(64, big),
+  }));
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -152,26 +176,36 @@ async function main() {
   const vkJson = JSON.parse(fs.readFileSync(vkPath, "utf8"));
 
   const keypair = Keypair.fromSecret(SECRET_KEY);
-  const server = new SorobanRpc.Server(RPC_URL);
-  const networkPassphrase =
-    NETWORK === "mainnet" ? Networks.PUBLIC : Networks.TESTNET;
+  const admin   = ADMIN_ADDRESS || keypair.publicKey();
+  const usdcTok = USDC_TOKEN   || keypair.publicKey(); // safe placeholder at fee=0
 
-  console.log("Contract ID:", CONTRACT_ID);
-  console.log("Deployer:   ", keypair.publicKey());
-  console.log("Network:    ", NETWORK);
-  console.log("Building StoredVk...");
+  const networkPassphrase = NETWORK === "mainnet" ? Networks.PUBLIC : Networks.TESTNET;
+  const explorerBase = NETWORK === "mainnet"
+    ? "https://stellar.expert/explorer/public/tx/"
+    : "https://stellar.expert/explorer/testnet/tx/";
 
-  const vkScVal = buildStoredVk(vkJson);
-  const issuerScVal = xdr.ScVal.scvBytes(hexToBytes(ISSUER_PUBKEY));
+  console.log("Contract ID :", CONTRACT_ID);
+  console.log("Network     :", NETWORK);
+  console.log("Admin       :", admin);
+  console.log("Treasury    :", TREASURY_ADDRESS);
+  console.log("USDC token  :", usdcTok, USDC_TOKEN ? "" : "(placeholder — update before activating fees)");
+  console.log("Fee amount  : 0 (free at launch)");
+  console.log("");
 
+  const server   = new SorobanRpc.Server(RPC_URL);
   const contract = new Contract(CONTRACT_ID);
-  const account = await server.getAccount(keypair.publicKey());
+  const account  = await server.getAccount(keypair.publicKey());
 
-  const tx = new TransactionBuilder(account, {
-    fee: BASE_FEE,
-    networkPassphrase,
-  })
-    .addOperation(contract.call("initialize", vkScVal, issuerScVal))
+  const tx = new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase })
+    .addOperation(contract.call(
+      "initialize",
+      buildStoredVk(vkJson),
+      xdr.ScVal.scvBytes(hexToBytes(ISSUER_PUBKEY)),
+      scAddress(admin),
+      scAddress(TREASURY_ADDRESS),
+      scAddress(usdcTok),
+      scI128(0),
+    ))
     .setTimeout(30)
     .build();
 
@@ -188,21 +222,26 @@ async function main() {
 
   console.log("Submitting...");
   const sendResult = await server.sendTransaction(preparedTx);
-  console.log("TX hash:", sendResult.hash);
 
-  // Poll for confirmation
+  process.stdout.write("Waiting for confirmation");
   let getResult;
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 12; i++) {
     await new Promise((r) => setTimeout(r, 2000));
+    process.stdout.write(".");
     getResult = await server.getTransaction(sendResult.hash);
     if (getResult.status !== "NOT_FOUND") break;
   }
 
   if (getResult.status === "SUCCESS") {
-    console.log("\n✅ Contract initialized successfully!");
-    console.log("🔗 https://stellar.expert/explorer/testnet/tx/" + sendResult.hash);
+    console.log("\n✅ initialize() successful!");
+    console.log("   tx :", explorerBase + sendResult.hash);
+    console.log("");
+    console.log("Next steps:");
+    console.log("  1. Update VITE_AGE_VERIFIER_CONTRACT_ID in Lovable env vars to:", CONTRACT_ID);
+    console.log("  2. Update CLAUDE.md and README.md with the new contract ID");
+    console.log("  3. When ready to activate fees: configure USDC_TOKEN and call set_fee()");
   } else {
-    console.error("❌ Transaction failed:", getResult.status, getResult);
+    console.error("\n❌ Transaction failed:", getResult.status, getResult);
     process.exit(1);
   }
 }
