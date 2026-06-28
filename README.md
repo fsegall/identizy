@@ -45,9 +45,9 @@ A zero-knowledge identity system on Stellar that lets users verify any attribute
 
 ## The Problem
 
-Every time you need to prove you're over 18 — to buy alcohol, access adult content, open a trading account, enter a venue — you hand over your passport, driver's license, or credit card to a company you may never trust again. That data is stored, breached, and sold. You've handed your identity to dozens of strangers.
+Every time you need to prove something about yourself — your age, your income, your residency, your professional credentials — you hand over your passport, driver's license, or bank statement to a company you may never trust again. That data is stored, breached, and sold. You've handed your identity to dozens of strangers, once per service, forever.
 
-**KYC is broken by design.** It's invasive, repetitive, and creates honeypots of sensitive data that get breached.
+**Identity verification is broken by design.** It's invasive, repetitive, and creates honeypots of sensitive data that get breached.
 
 ---
 
