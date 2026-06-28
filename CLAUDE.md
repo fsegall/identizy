@@ -64,16 +64,16 @@ The system follows the **W3C Verifiable Credentials** trust model:
   - `set_fee()`, `set_treasury()` — live adjustment without redeploy
   - `request_withdraw()` / `execute_withdraw()` / `cancel_withdraw()` — timelocked flush
   - `upgrade()` — future WASM upgrades without new contract ID
-- **Fresh mainnet deploy pending** — new contract ID (replacing `CBPG3KIS6NEGWANQFEKWKFYFENECUWG4KLJZ7KN25SCPKODHFO33MMTY`)
-  - Old contract had no `upgrade()` — fresh deploy required; WASM larger (15 XLM resource fee)
-  - Deploy command: `stellar contract deploy --wasm target/.../age_verifier.wasm --source alice --network mainnet --rpc-url https://soroban-rpc.creit.tech ...`
-  - Initialize: `CONTRACT_ID=C... STELLAR_SECRET_KEY=S... ISSUER_PUBKEY=hex node scripts/initialize_contract.js`
+- **Contract v2 deployed to testnet** — `CD3EWWEN2BNYZDV3LFOZXRINAGZ4WQQ6JKVHQ3SEN7PWJGZVC6QVCIRT`
+  - Initialized via `scripts/initialize_contract.js` — tx `e1fe740c8ea3e631285f247af260d0be7fb550b3d2155785a76a646b91df2b0e`
+  - Old v1 testnet: `CA7ZALWIDPVDBYSZXMO4WOM4INCWD7UUAZ3XJEQICWGY6H2JDLGGDKEO`
+  - Mainnet v2 deploy pending (alice needs ~18 XLM; resource fee ~15 XLM for larger WASM)
+  - When ready: `stellar contract deploy --source alice --network mainnet --rpc-url https://soroban-rpc.creit.tech ...`
 - **Plans documented:** `docs/monetization_plan.md`, `docs/security_audit.md`
 
 ### 🚧 Next Steps
-1. Transfer XLM to alice (`GBZFUMBDCDL7FL5VLD2IG4AEVWM4RYNXLOCEXWP72E33TLEIOADJMHMQ`) — need ~18 XLM total (resource fee ~15 XLM)
-2. Run deploy + initialize, update contract ID in CLAUDE.md + README + Lovable env vars
-3. Submit on DoraHacks with repo URL + video — June 29, 12:00 PM PST
+1. Submit on DoraHacks with repo URL + video — June 29, 12:00 PM PST
+2. Mainnet v2 deploy when alice funded (~18 XLM to `GBZFUMBDCDL7FL5VLD2IG4AEVWM4RYNXLOCEXWP72E33TLEIOADJMHMQ`)
 
 ---
 

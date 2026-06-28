@@ -29,9 +29,11 @@ A zero-knowledge identity system on Stellar that lets users verify any attribute
 
 | | |
 |---|---|
-| **Contract** | `CBY4RHLTT6CWB5K7M6IEMCI2BUVWAYAHOUS2XUG5HH2PDMDM77FIWFER` |
-| **Explorer** | https://stellar.expert/explorer/testnet/contract/CBY4RHLTT6CWB5K7M6IEMCI2BUVWAYAHOUS2XUG5HH2PDMDM77FIWFER |
-| **Proof tx** | https://stellar.expert/explorer/testnet/tx/c4db0d131a3d4a416087c6e0571f7cd0724be32e49f70feae8e295969e9bce76 |
+| **Contract v2** | `CD3EWWEN2BNYZDV3LFOZXRINAGZ4WQQ6JKVHQ3SEN7PWJGZVC6QVCIRT` |
+| **Explorer** | https://stellar.expert/explorer/testnet/contract/CD3EWWEN2BNYZDV3LFOZXRINAGZ4WQQ6JKVHQ3SEN7PWJGZVC6QVCIRT |
+| **Init tx** | https://stellar.expert/explorer/testnet/tx/e1fe740c8ea3e631285f247af260d0be7fb550b3d2155785a76a646b91df2b0e |
+| **Contract v1** | `CBY4RHLTT6CWB5K7M6IEMCI2BUVWAYAHOUS2XUG5HH2PDMDM77FIWFER` (legacy) |
+| **Proof tx (v1)** | https://stellar.expert/explorer/testnet/tx/c4db0d131a3d4a416087c6e0571f7cd0724be32e49f70feae8e295969e9bce76 |
 | **Network** | Stellar Testnet (Protocol 25 "X-Ray") |
 
 **What the proof transaction shows on-chain:**
@@ -528,6 +530,19 @@ This architecture addresses each regulatory regime on its own terms:
 Protocol 25 "X-Ray" added BN254 elliptic curve host functions (`g1_add`, `g1_mul`, `pairing_check`) and Poseidon hash natively to Soroban — enabling efficient on-chain Groth16 proof verification for the first time on Stellar. BN254 on Stellar mirrors Ethereum's EIP-196/197 precompiles, so existing Circom circuits port without modification.
 
 Identizy brings battle-tested ZK infrastructure (Circom + snarkjs) to Stellar's payment rails and institutional settlement network — the natural home for compliant, privacy-preserving identity.
+
+---
+
+## Project Documentation
+
+Internal design and security documents are in [`docs/`](docs/):
+
+| Document | Contents |
+|---|---|
+| [`docs/monetization_plan.md`](docs/monetization_plan.md) | Revenue model, USDC fee system, treasury security layers (direct forwarding + 48h timelock + multisig), fee schedule |
+| [`docs/security_audit.md`](docs/security_audit.md) | Self-audit: 3 vulnerabilities fixed, 2 accepted risks, 5 liveness risk scenarios, conflict analysis, operational procedures |
+
+> **Mainnet v2 deploy:** The v2 contract (with fee system, admin controls, and `upgrade()`) is deployed on testnet at `CD3EWWEN2BNYZDV3LFOZXRINAGZ4WQQ6JKVHQ3SEN7PWJGZVC6QVCIRT`. Mainnet deploy replaces `CBPG3KIS6NEGWANQFEKWKFYFENECUWG4KLJZ7KN25SCPKODHFO33MMTY` when ready — same deploy script, same initialize flow (`scripts/initialize_contract.js`).
 
 ---
 
