@@ -1,0 +1,3 @@
+## Monetization
+
+Identizy operates as **protocol-level infrastructure** — revenue is collected on-chain, not through APIs or subscriptions. A USDC fee is charged at the moment of credential issuance via `verify()`, forwarded directly from the user to the treasury (the contract never holds funds). The fee is zero at launch and adjustable by the admin without redeployment. Future revenue streams include NFT avatar mints, KYC provider referrals, and credential type licensing for third parties. Because `has_credential()` is free and permissionless on Stellar, adoption is frictionless — monetization scales with the ecosystem, not against it.
