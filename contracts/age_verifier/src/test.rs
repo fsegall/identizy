@@ -3,10 +3,11 @@ extern crate std;
 
 use soroban_sdk::{
     crypto::bn254::{Fr, Bn254G1Affine as G1Affine, Bn254G2Affine as G2Affine},
-    BytesN, Env, Vec,
+    testutils::Address as _,
+    Address, BytesN, Env, Vec,
 };
 
-use crate::{AgeVerifier, AgeVerifierClient, AgeVerifierError, DataKey, Groth16Proof, StoredVk};
+use crate::{AgeVerifier, AgeVerifierClient, AgeVerifierError, Groth16Proof, StoredVk};
 
 // ── Byte-conversion helpers ───────────────────────────────────────────────────
 // Encode BN254 field elements from decimal strings to big-endian 32-byte arrays.
@@ -187,6 +188,13 @@ fn setup(env: &Env) -> AgeVerifierClient<'_> {
     AgeVerifierClient::new(env, &env.register(AgeVerifier {}, ()))
 }
 
+// Initialize with fee=0 and dummy addresses — no USDC token needed in tests.
+fn init(env: &Env, client: &AgeVerifierClient<'_>) {
+    let admin    = Address::generate(env);
+    let usdc_tok = Address::generate(env);
+    client.initialize(&test_vk(env), &test_issuer_pubkey(env), &admin, &usdc_tok, &0i128);
+}
+
 // ── Tests ─────────────────────────────────────────────────────────────────────
 // Structure is correct. Values marked TODO need regeneration after make circuits.
 
@@ -194,25 +202,30 @@ fn setup(env: &Env) -> AgeVerifierClient<'_> {
 fn test_double_initialize_rejected() {
     let env = Env::default();
     let client = setup(&env);
-    client.initialize(&test_vk(&env), &test_issuer_pubkey(&env));
-    let result = client.try_initialize(&test_vk(&env), &test_issuer_pubkey(&env));
+    init(&env, &client);
+    let admin    = Address::generate(&env);
+    let usdc_tok = Address::generate(&env);
+    let result = client.try_initialize(&test_vk(&env), &test_issuer_pubkey(&env), &admin, &usdc_tok, &0i128);
     assert_eq!(result, Err(Ok(AgeVerifierError::AlreadyInitialized)));
 }
 
 #[test]
 fn test_verify_before_initialize_rejected() {
     let env = Env::default();
+    env.mock_all_auths();
     let client = setup(&env);
     let (proof, inputs) = test_proof(&env);
-    let result = client.try_verify(&proof, &inputs, &null(&env), &test_issuer_sig(&env));
+    let caller = Address::generate(&env);
+    let result = client.try_verify(&caller, &proof, &inputs, &null(&env), &test_issuer_sig(&env));
     assert_eq!(result, Err(Ok(AgeVerifierError::NotInitialized)));
 }
 
 #[test]
 fn test_wrong_input_count_rejected() {
     let env = Env::default();
+    env.mock_all_auths();
     let client = setup(&env);
-    client.initialize(&test_vk(&env), &test_issuer_pubkey(&env));
+    init(&env, &client);
 
     // Pass 1 input instead of required 3
     let mut bad_inputs: Vec<Fr> = Vec::new(&env);
@@ -226,7 +239,8 @@ fn test_wrong_input_count_rejected() {
         c: G1Affine::from_bytes(BytesN::from_array(&env, &a_bytes)),
     };
 
-    let result = client.try_verify(&dummy_proof, &bad_inputs, &null(&env), &test_issuer_sig(&env));
+    let caller = Address::generate(&env);
+    let result = client.try_verify(&caller, &dummy_proof, &bad_inputs, &null(&env), &test_issuer_sig(&env));
     assert_eq!(result, Err(Ok(AgeVerifierError::MalformedPublicInputs)));
 }
 
