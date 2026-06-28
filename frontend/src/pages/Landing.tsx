@@ -75,6 +75,12 @@ const Landing = () => {
       number: 4,
       title: t('howItWorks.step4.title'),
       description: t('howItWorks.step4.desc')
+    },
+    {
+      number: 5,
+      title: t('howItWorks.step5.title'),
+      description: t('howItWorks.step5.desc'),
+      soon: t('howItWorks.step5.soon')
     }
   ];
 
@@ -287,19 +293,19 @@ const Landing = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
             {steps.map((step, index) => (
               <div key={index} className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-xl">
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-xl ${step.soon ? 'bg-gradient-to-r from-purple-500 to-pink-500 opacity-70' : 'bg-gradient-to-r from-primary to-accent'}`}>
                   {step.number}
                 </div>
-                <h3 className="text-lg font-semibold mb-2">{step.title}</h3>
-                <p className="text-muted-foreground text-sm">{step.description}</p>
-                {index < steps.length - 1 && (
-                  <div className="hidden lg:block absolute top-8 left-full w-full">
-                    <ArrowRight className="h-5 w-5 text-muted-foreground mx-auto" />
-                  </div>
+                <h3 className="text-lg font-semibold mb-1">{step.title}</h3>
+                {'soon' in step && (
+                  <span className="inline-block text-xs font-medium px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300 mb-1">
+                    {step.soon}
+                  </span>
                 )}
+                <p className="text-muted-foreground text-sm">{step.description}</p>
               </div>
             ))}
           </div>

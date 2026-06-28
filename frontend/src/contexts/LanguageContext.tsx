@@ -53,6 +53,9 @@ const translations = {
     'howItWorks.step3.desc': 'Your browser computes a zero-knowledge proof. Your personal data never leaves your device.',
     'howItWorks.step4.title': 'Use Anywhere',
     'howItWorks.step4.desc': 'Your credential lives on Stellar. Any service checks it with one blockchain call — forever.',
+    'howItWorks.step5.title': 'Mint Your NFT Avatar',
+    'howItWorks.step5.desc': 'Choose a face for your verified identity. A persona that is you — without being you.',
+    'howItWorks.step5.soon': 'Coming Soon',
 
     // Demo Section
     'demo.title': 'See It In Action',
@@ -163,6 +166,9 @@ const translations = {
     'howItWorks.step3.desc': 'Seu navegador calcula uma prova zero-knowledge. Seus dados pessoais nunca saem do seu dispositivo.',
     'howItWorks.step4.title': 'Usar em Qualquer Lugar',
     'howItWorks.step4.desc': 'Sua credencial vive na Stellar. Qualquer serviço a consulta com uma chamada blockchain — para sempre.',
+    'howItWorks.step5.title': 'Criar Seu Avatar NFT',
+    'howItWorks.step5.desc': 'Escolha uma cara para sua identidade verificada. Um personagem que é você — sem ser você.',
+    'howItWorks.step5.soon': 'Em Breve',
 
     // Demo Section
     'demo.title': 'Veja em Ação',
