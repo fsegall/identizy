@@ -506,6 +506,11 @@ Identizy brings battle-tested ZK infrastructure (Circom + snarkjs) to Stellar's 
 
 ## Team
 
-> Felipe Segall — [@fsegall](https://github.com/fsegall)
+| | Role |
+|---|---|
+| **Felipe Segall** | Tech Lead & Software Architect · Founder of Livre Solutions |
+| **Paulo Marinato** | Web3 Specialist · Product Manager · Marketing Director |
+| **Conrado Niemeyer** | Full-stack Web3 Lead Developer |
+| **Gustavo Weinschutz** | Solutions Architect · Senior Software Engineer |
 
 Built for **Stellar Hacks: Real-World ZK** · June 2026
