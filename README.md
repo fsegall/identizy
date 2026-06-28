@@ -179,6 +179,8 @@ Key property: Verifier learns NOTHING about Holder from Issuer.
 
 ## How It Works
 
+> The architecture supports any verifiable attribute. This POC implements **age verification (≥ 18)** as the first credential type.
+
 ### User Flow
 
 ```
@@ -186,8 +188,8 @@ Key property: Verifier learns NOTHING about Holder from Issuer.
 │  STEP 1 — KYC  (once, via a licensed provider)              │
 │                                                             │
 │  User uploads ID + selfie                                   │
-│  Platform verifies document authenticity                    │
-│  Platform signs: Issuer.sign(Poseidon(birthDate, addrHash)) │
+│  Provider verifies document, extracts attribute (birthDate) │
+│  Identizy signs: Issuer.sign(Poseidon(attribute, addrHash)) │
 │  User receives private attestation — never goes on-chain    │
 └──────────────────────────┬──────────────────────────────────┘
                            │
@@ -196,8 +198,8 @@ Key property: Verifier learns NOTHING about Holder from Issuer.
 │                                                             │
 │  Browser generates ZK proof (snarkjs + WASM, offline-safe)  │
 │  Proof asserts — without revealing:                         │
-│    ✓ I have a valid Issuer signature on my birthDate        │
-│    ✓ My birthDate satisfies age ≥ 18                        │
+│    ✓ I have a valid Issuer signature on my attribute        │
+│    ✓ My attribute satisfies the claim (e.g. age ≥ 18)       │
 │    ✓ This proof is bound to Stellar address A               │
 │                                                             │
 │  Soroban contract:                                          │
@@ -210,14 +212,14 @@ Key property: Verifier learns NOTHING about Holder from Issuer.
 ┌──────────────────────────▼──────────────────────────────────┐
 │  STEP 3 — Use Anywhere  (unlimited, anonymous)              │
 │                                                             │
-│  Third-party site: "Is address A age-verified?"             │
+│  Third-party site: "Is address A credential-verified?"      │
 │  Stellar: "Yes, credential valid, issued by Identizy"       │
 │  User accesses service — no document, no data, no trace     │
 │                                                             │
 │  Security properties:                                       │
 │  → Transfer token to another address? Proof fails (addr ≠)  │
 │  → Replay the proof? Nullifier blocks it                    │
-│  → Fake a birthdate? No Issuer signature → proof rejected   │
+│  → Fake the attribute? No Issuer signature → proof rejected │
 └─────────────────────────────────────────────────────────────┘
 ```
 
