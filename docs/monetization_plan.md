@@ -142,6 +142,56 @@ With this setup, a single compromised key cannot move funds or upgrade the contr
 
 **Treasury key rotation:** `set_treasury(new_address)` — single admin call, instant, no migration.
 
+#### How to configure the multisig admin account
+
+The multisig is configured on the Stellar account level — the contract is not involved and does not need to be changed.
+
+**Option 1 — Stellar Lab (GUI)**
+1. Go to https://laboratory.stellar.org/#txbuilder
+2. Select the admin account as source
+3. Add `Set Options` operations — one per signer key, setting weight = 1
+4. Set `lowThreshold = 1` and `medThreshold = 2` (or `highThreshold = 2` for upgrades)
+5. Sign with the master key and submit
+
+**Option 2 — Stellar CLI**
+```bash
+stellar tx new set-options \
+  --source ADMIN_ACCOUNT \
+  --signer-key CHAVE_FELIPE  --signer-weight 1 \
+  --signer-key CHAVE_PAULO   --signer-weight 1 \
+  --signer-key CHAVE_BACKUP  --signer-weight 1 \
+  --low-threshold  1 \
+  --med-threshold  2 \
+  --high-threshold 2 \
+  --network mainnet
+```
+
+**Option 3 — Stellar SDK (JavaScript)**
+```javascript
+const tx = new TransactionBuilder(adminAccount)
+  .addOperation(Operation.setOptions({
+    signer: { ed25519PublicKey: CHAVE_FELIPE, weight: 1 },
+  }))
+  .addOperation(Operation.setOptions({
+    signer: { ed25519PublicKey: CHAVE_PAULO, weight: 1 },
+  }))
+  .addOperation(Operation.setOptions({
+    signer:        { ed25519PublicKey: CHAVE_BACKUP, weight: 1 },
+    lowThreshold:  1,  // set_fee, set_treasury, request_withdraw, cancel_withdraw
+    medThreshold:  2,  // execute_withdraw, upgrade
+    highThreshold: 2,
+  }))
+  .build();
+// sign with master key and submit
+```
+
+**Signer compromise — rotation procedure**
+```
+1. Remaining signers assemble 2-of-3 signature (without the compromised key)
+2. Submit Set Options: remove compromised key (weight 0), add new key (weight 1)
+3. Contract address unchanged — no upgrade, no migration
+```
+
 ---
 
 ## Contract Interface — Admin Functions
