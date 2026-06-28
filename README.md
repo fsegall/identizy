@@ -506,7 +506,6 @@ Identizy brings battle-tested ZK infrastructure (Circom + snarkjs) to Stellar's 
 
 ## Team
 
-| | Role |
 |---|---|
 | **Felipe Segall** | Tech Lead & Software Architect · Founder of Livre Solutions |
 | **Paulo Marinato** | Web3 Specialist · Product Manager · Marketing Director |
