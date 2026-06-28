@@ -38,20 +38,19 @@ The system follows the **W3C Verifiable Credentials** trust model:
 ### 2026-06-24 — First ZK Proof on Stellar Mainnet
 - **Deployed to Stellar mainnet** — Contract ID: `CBPG3KIS6NEGWANQFEKWKFYFENECUWG4KLJZ7KN25SCPKODHFO33MMTY`
 - **First Groth16 proof verified on-chain** — tx `0d8687d641401ed1bbc98df2cb6fab67c02abeb6bd5fa4762774afba3ac2b207`
-- Proof submitted via frontend running locally (localhost:8080)
+- Proof submitted via frontend running locally, exposed via ngrok (HTTPS required by Freighter)
 
-### 2026-06-27 — Full End-to-End Flow + Production Deploy
+### 2026-06-27 — Full End-to-End Flow in Production
 - **Issuer signing** — moved to Lovable Cloud edge function (`supabase/functions/sign-commitment/`)
   - Private key stored as Supabase secret — never in browser bundle
   - `VITE_ISSUER_PRIVKEY_PKCS8` removed from frontend; `VITE_SIGNER_URL` configured
-- **End-to-end flow verified (frontend via ngrok → port 8080, mainnet contract):**
+- **End-to-end flow verified in production at https://identizy.lovable.app:**
   - Freighter wallet connects via Stellar Wallets Kit ✅
   - Browser generates ZK proof (snarkjs WASM) ✅
   - Edge function signs commitment (Ed25519, Deno Web Crypto API) ✅
   - Soroban contract verifies Groth16 proof + Ed25519 sig on mainnet ✅
   - Dashboard shows "Age ≥ 18 verified" with active credential ✅
   - Mainnet tx: `91c3a617620fb76e02197ca4cbe053fd4c5d9527eaa2562cdf593d677370d591`
-- **Frontend deployed to Lovable Cloud** — https://identizy.lovable.app (mainnet env, pending full e2e test on prod URL)
 - **Dead code removed:** Supabase legacy hooks/pages, Ethereum providers, NFT minting
 - **Landing page updated:** broader ZK identity pitch, full i18n (EN/PT), demo section
 
