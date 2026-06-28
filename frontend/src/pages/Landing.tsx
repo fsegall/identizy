@@ -88,18 +88,18 @@ const Landing = () => {
           </div>
           <span className="text-xl font-bold">Identizy</span>
         </div>
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-4">
           <LanguageToggle />
           <Button
             variant="outline"
             size="sm"
             onClick={() => navigate('/create-attestation')}
-            className="flex items-center gap-2"
+            className="hidden sm:flex items-center gap-2"
           >
             <Plus className="h-4 w-4" />
             {t('nav.createAttestation')}
           </Button>
-          <Button variant="ghost" onClick={() => navigate('/auth')}>
+          <Button variant="ghost" onClick={() => navigate('/auth')} className="hidden sm:inline-flex">
             {t('nav.login')}
           </Button>
           <Button
@@ -109,7 +109,7 @@ const Landing = () => {
             className="flex items-center gap-2"
           >
             <Wallet className="h-4 w-4" />
-            {t('nav.connectWallet')}
+            <span className="hidden sm:inline">{t('nav.connectWallet')}</span>
           </Button>
         </div>
       </nav>
