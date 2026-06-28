@@ -55,17 +55,17 @@ Every time you need to prove something about yourself — your age, your income,
 
 **One real KYC. Infinite anonymous proofs.**
 
-Identizy lets users:
+Identizy lets users verify any attribute about themselves — age, income, residency, professional credentials — once, and reuse that proof everywhere forever. Age verification (≥ 18) is the first use case and the one demonstrated in this hackathon submission.
 
-1. **Verify once** — upload a real ID document on our platform. We verify it, extract your birthdate, and sign an attestation tied to your Stellar address.
-2. **Mint a credential** — your browser generates a ZK proof that you're ≥ 18 *and* that the proof belongs to your specific address. You mint a soulbound, address-bound credential on Stellar — no personal data on-chain.
-3. **Use it everywhere** — any third-party site checks: "does this address hold a valid Identizy?" Stellar says yes. No document, no birthdate, no identity revealed.
+1. **Verify once** — a licensed KYC provider verifies a real ID document, extracts the relevant attribute (e.g. birthdate), and discards the document. Identizy signs a cryptographic attestation tied to your Stellar address.
+2. **Mint a credential** — your browser generates a ZK proof of the attribute (e.g. you're ≥ 18) *and* that the proof belongs to your specific address. You mint a soulbound, address-bound credential on Stellar — no personal data on-chain.
+3. **Use it everywhere** — any third-party site checks: "does this address hold a valid Identizy credential?" Stellar says yes. No document, no personal data, no identity revealed.
 
 The credential is:
 - **Address-bound** — cryptographically tied to your Stellar address via ZK proof; useless if transferred
 - **Soulbound** — non-transferable at the contract level (double protection)
 - **Privacy-preserving** — the on-chain token contains zero personal information
-- **Issuer-anchored** — only our signed attestations generate valid proofs; you can't fake it with a false birthdate
+- **Issuer-anchored** — only signed attestations from licensed providers generate valid proofs; you can't fake it with false data
 
 ---
 
