@@ -584,12 +584,7 @@ Connect Freighter wallet (testnet), enter a birthdate ≥ 18 years ago, click "G
 
 **Multi-attribute credentials:** Extend the circuit to support additional claims beyond age — nationality, accredited-investor status, proof of humanity — using the same W3C VC trust model.
 
-**Wallet abstraction (non-crypto onboarding):** Remove the Freighter requirement for mainstream users. The Stellar ecosystem has a [Passkey Kit](https://github.com/kalepail/passkey-kit) that creates custodial-free Stellar accounts using WebAuthn / device biometrics — no seed phrase, no browser extension, no "what is a wallet" explanation. A user would sign in with Face ID or fingerprint, get a Stellar account behind the scenes, and complete the full ZK credential flow without ever knowing they used a blockchain. The passkey also adds a layer of proof of humanity and device binding — sufficient for some use cases on its own, and a better UX foundation for the full KYC flow in others.
-
-| Level | What it proves | Requires document? | Sufficient for |
-|---|---|---|---|
-| **Passkey only** | Humanity + device uniqueness | No | DAOs, Sybil resistance, airdrops |
-| **Passkey + KYC + ZK** | Real attribute (age, identity) | **Yes — always** | Age-gating, regulated services, DeFi compliance |
+**Wallet abstraction (non-crypto onboarding):** Remove the Freighter requirement for mainstream users. The Stellar ecosystem has a [Passkey Kit](https://github.com/kalepail/passkey-kit) that creates custodial-free Stellar accounts using WebAuthn / device biometrics — no seed phrase, no browser extension, no "what is a wallet" explanation. A user would sign in with Face ID or fingerprint, get a Stellar account behind the scenes, and complete the full ZK credential flow without ever knowing they used a blockchain. The passkey, besides being a better UX foundation for the full KYC flow, also adds a layer of proof of humanity and device binding — sufficient for some use cases on its own.
 
 ---
 
