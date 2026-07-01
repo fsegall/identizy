@@ -90,10 +90,14 @@ The system follows the **W3C Verifiable Credentials** trust model:
   - USDC testnet SAC: `CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA`
 
 ### 🚧 Next Steps
-1. Upgrade `age_verifier` on testnet — `upgrade(new_wasm_hash)` to activate `has_credential_by_address`
-2. Deploy + initialize `soulbound_nft` on testnet
-3. Frontend integration: NFT mint UI, tier selector, avatar picker, burn/re-mint flow
-4. Mainnet v2 deploy when alice funded (~18 XLM to `GBZFUMBDCDL7FL5VLD2IG4AEVWM4RYNXLOCEXWP72E33TLEIOADJMHMQ`)
+1. ~~Upgrade `age_verifier` on testnet~~ ✅ done
+2. ~~Deploy + initialize `soulbound_nft` on testnet~~ ✅ done
+3. Frontend integration: NFT mint UI (tier Basic only), avatar prompt → fal.ai → IPFS, burn/re-mint flow
+   - `supabase/functions/generate-avatar/` implemented — needs FAL_API_KEY + PINATA_JWT as Supabase Secrets
+   - `frontend/src/services/soulboundNft.ts` implemented — needs VITE_SOULBOUND_NFT_CONTRACT_ID + VITE_GENERATE_AVATAR_URL in .env
+   - Dashboard.tsx needs NFT section added
+4. Deploy `generate-avatar` edge function to Supabase (via Lovable or `supabase functions deploy generate-avatar`)
+5. Mainnet v2 deploy when alice funded (~18 XLM to `GBZFUMBDCDL7FL5VLD2IG4AEVWM4RYNXLOCEXWP72E33TLEIOADJMHMQ`)
 
 ---
 
