@@ -17,7 +17,7 @@ import {
   Plus,
 } from 'lucide-react';
 
-const DEMO_RECORDING_URL = "https://www.awesomescreenshot.com/video/54131454?key=33976bfcf04fbfb8f11e0ce1253e5dca";
+const DEMO_RECORDING_EMBED_URL = "https://www.youtube.com/embed/2RZmTQsTCeo";
 const TEASER_VIDEO_EMBED_URL = "https://www.youtube.com/embed/anN2X7D3MSs";
 const GAMMA_DECK_URL = "https://gamma.app/docs/Prove-who-you-are-once-Be-anyone-everywhere-ywt409gzkanp3a8";
 const CREDENTIAL_TX = "402d7eab70c17d6839db3a9b42a07de939b956db328080feb817fd45629bac6d";
@@ -198,21 +198,15 @@ const Landing = () => {
           {/* Main: product screen recording */}
           <div className="flex flex-col gap-4 mb-6">
             <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">{t('demo.videoLabel')}</h3>
-            <a
-              href={DEMO_RECORDING_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex items-center gap-5 rounded-xl border bg-slate-950 hover:border-primary/40 transition-colors px-6 py-5"
-            >
-              <div className="shrink-0 w-12 h-12 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                <Play className="h-5 w-5 text-primary ml-0.5" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-white font-semibold">{t('demo.watchRecording')}</p>
-                <p className="text-slate-400 text-sm truncate">{t('demo.recordingSubtitle')}</p>
-              </div>
-              <ArrowRight className="shrink-0 h-4 w-4 text-slate-500 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
-            </a>
+            <div className="relative w-full rounded-xl overflow-hidden border shadow-lg" style={{ paddingTop: '56.25%' }}>
+              <iframe
+                src={DEMO_RECORDING_EMBED_URL}
+                className="absolute inset-0 w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                title="Identizy Product Demo"
+              />
+            </div>
 
             {/* Stellar Explorer links */}
             <div className="flex flex-wrap gap-3">
