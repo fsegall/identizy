@@ -150,7 +150,7 @@ export async function burnNft(
   const op = contract.call(
     "burn",
     addrToScVal(callerAddress),
-    xdr.ScVal.scvI128(new xdr.Int128Parts({ hi: new xdr.Int64(0, 0), lo: new xdr.Uint64(1, 0) }))
+    xdr.ScVal.scvI128(new xdr.Int128Parts({ hi: new xdr.Int64(0), lo: new xdr.Uint64(1) }))
   );
   return signAndSubmit(callerAddress, op, signTransaction);
 }
