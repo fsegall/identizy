@@ -5,7 +5,7 @@
  * Uses @stellar/stellar-sdk v13 (SorobanRpc namespace).
  */
 
-import { Contract, Networks, TransactionBuilder, BASE_FEE, xdr } from "@stellar/stellar-sdk";
+import { Contract, Networks, TransactionBuilder, BASE_FEE, xdr, Address } from "@stellar/stellar-sdk";
 import * as SorobanRpc from "@stellar/stellar-sdk/rpc";
 import type { AgeProofResult } from "./zkProof";
 
@@ -80,6 +80,7 @@ export async function verifyAgeOnChain(
     .addOperation(
       contract.call(
         "verify",
+        Address.fromString(callerAddress).toScVal(),
         buildProofScVal(proofResult),
         buildPubInputsScVal(proofResult),
         xdr.ScVal.scvBytes(Buffer.from(nullifierBytes)),
