@@ -571,9 +571,9 @@ Connect Freighter wallet (testnet), enter a birthdate ≥ 18 years ago, click "G
 
 **In-circuit EdDSA (Option B):** Move the Issuer signature verification inside the ZK circuit to eliminate the Ed25519 check in the contract (~+3,000 constraints, needs powersOfTau17).
 
-**NFT as Identity:** Turn the credential into a real SEP-0041 soulbound token — appears in Freighter/Lobstr, composable with any Stellar DeFi protocol, standard `balance()` interface for verifiers.
+**Production KYC:** Integrate a real document-verification provider (Jumio / Onfido) for the Issuer flow, and commission a formal circuit + contract audit.
 
-**Production:** Real KYC provider (Jumio/Onfido), mainnet deployment, circuit + contract audit.
+**Multi-attribute credentials:** Extend the circuit to support additional claims beyond age — nationality, accredited-investor status, proof of humanity — using the same W3C VC trust model.
 
 ---
 
