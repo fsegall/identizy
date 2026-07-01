@@ -645,6 +645,7 @@ Internal design and security documents are in [`docs/`](docs/):
 |---|---|
 | [`docs/IDENTIZY_FLOW.md`](docs/IDENTIZY_FLOW.md) | Full end-to-end verification flow — KYC hosted session (documents never reach Identizy), Issuer signing, browser ZK proof generation, on-chain verification, third-party integration |
 | [`docs/monetization_plan.md`](docs/monetization_plan.md) | Revenue model, USDC fee system, treasury security layers (direct forwarding + 48h timelock + multisig), fee schedule |
+| [`docs/project_description_monetization.md`](docs/project_description_monetization.md) | One-paragraph product + monetization summary — two live fee streams (credential issuance + NFT mint tiers), permissionless verifier adoption |
 | [`docs/security_audit.md`](docs/security_audit.md) | Self-audit: 3 vulnerabilities fixed, 2 accepted risks, 5 liveness risk scenarios, conflict analysis, operational procedures |
 
 > **Mainnet v2 deploy:** The v2 contract (with fee system, admin controls, and `upgrade()`) is deployed on testnet at `CD3EWWEN2BNYZDV3LFOZXRINAGZ4WQQ6JKVHQ3SEN7PWJGZVC6QVCIRT`. Mainnet deploy replaces `CBPG3KIS6NEGWANQFEKWKFYFENECUWG4KLJZ7KN25SCPKODHFO33MMTY` when ready — same deploy script, same initialize flow (`scripts/initialize_contract.js`).
