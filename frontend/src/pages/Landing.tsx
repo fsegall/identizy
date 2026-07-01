@@ -17,8 +17,12 @@ import {
   Plus,
 } from 'lucide-react';
 
-const DEMO_VIDEO_EMBED_URL = "https://www.youtube.com/embed/anN2X7D3MSs";
+const DEMO_RECORDING_URL = "https://www.awesomescreenshot.com/video/54131454?key=33976bfcf04fbfb8f11e0ce1253e5dca";
+const TEASER_VIDEO_EMBED_URL = "https://www.youtube.com/embed/anN2X7D3MSs";
 const GAMMA_DECK_URL = "https://gamma.app/docs/Prove-who-you-are-once-Be-anyone-everywhere-ywt409gzkanp3a8";
+const CREDENTIAL_TX = "402d7eab70c17d6839db3a9b42a07de939b956db328080feb817fd45629bac6d";
+const NFT_TX = "0e69eb22298822d9a60f2ac59a8a8e9a48b8245af8a49d2ee5c53c820bdf10a3";
+const EXPLORER_BASE = "https://stellar.expert/explorer/public/tx/";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -80,7 +84,6 @@ const Landing = () => {
       number: 5,
       title: t('howItWorks.step5.title'),
       description: t('howItWorks.step5.desc'),
-      soon: t('howItWorks.step5.soon')
     }
   ];
 
@@ -192,28 +195,65 @@ const Landing = () => {
             </p>
           </div>
 
+          {/* Main: product screen recording */}
+          <div className="flex flex-col gap-4 mb-6">
+            <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">{t('demo.videoLabel')}</h3>
+            <a
+              href={DEMO_RECORDING_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative w-full rounded-xl overflow-hidden border shadow-lg bg-slate-950 flex items-center justify-center hover:border-primary/40 transition-colors"
+              style={{ minHeight: '360px' }}
+            >
+              <div className="flex flex-col items-center gap-4 p-12 text-center">
+                <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                  <Play className="h-8 w-8 text-primary ml-1" />
+                </div>
+                <p className="text-white font-semibold text-lg">{t('demo.watchRecording')}</p>
+                <p className="text-slate-400 text-sm">{t('demo.recordingSubtitle')}</p>
+                <span className="inline-flex items-center gap-1 text-xs text-slate-300 border border-slate-600 rounded-full px-3 py-1 group-hover:border-slate-400 transition-colors">
+                  {t('demo.openRecording')} <ArrowRight className="h-3 w-3" />
+                </span>
+              </div>
+            </a>
+
+            {/* Stellar Explorer links */}
+            <div className="flex flex-wrap gap-3">
+              <a
+                href={EXPLORER_BASE + CREDENTIAL_TX}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors font-mono"
+              >
+                <Shield className="h-3 w-3 shrink-0" />
+                {t('demo.credentialTx')} ↗
+              </a>
+              <a
+                href={EXPLORER_BASE + NFT_TX}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 transition-colors font-mono"
+              >
+                <Sparkles className="h-3 w-3 shrink-0" />
+                {t('demo.nftTx')} ↗
+              </a>
+            </div>
+          </div>
+
+          {/* Secondary: Teaser + Pitch Deck */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Video */}
+            {/* Teaser */}
             <div className="flex flex-col gap-3">
-              <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">{t('demo.videoLabel')}</h3>
-              {DEMO_VIDEO_EMBED_URL ? (
-                <div className="relative w-full rounded-xl overflow-hidden border shadow-lg" style={{ paddingTop: '56.25%' }}>
-                  <iframe
-                    src={DEMO_VIDEO_EMBED_URL}
-                    className="absolute inset-0 w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    title="Identizy Demo"
-                  />
-                </div>
-              ) : (
-                <div className="relative w-full rounded-xl border-2 border-dashed border-muted-foreground/30 bg-muted/50 flex flex-col items-center justify-center gap-3 text-muted-foreground" style={{ paddingTop: '56.25%' }}>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                    <Play className="h-12 w-12 opacity-30" />
-                    <p className="text-sm">{t('demo.videoComingSoon')}</p>
-                  </div>
-                </div>
-              )}
+              <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">{t('demo.teaserLabel')}</h3>
+              <div className="relative w-full rounded-xl overflow-hidden border shadow-lg" style={{ paddingTop: '56.25%' }}>
+                <iframe
+                  src={TEASER_VIDEO_EMBED_URL}
+                  className="absolute inset-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title="Identizy Teaser"
+                />
+              </div>
             </div>
 
             {/* Pitch Deck */}
