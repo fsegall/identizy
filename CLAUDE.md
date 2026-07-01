@@ -103,7 +103,8 @@ The system follows the **W3C Verifiable Credentials** trust model:
   - Treasury USDC trustline added (tx `0e1396c1...`) — required to receive USDC fees
   - tx timeout increased 30s → 300s in `soulboundNft.ts` + `stellar.ts` (prevent `txTooLate`)
   - `VITE_GENERATE_AVATAR_URL` set to `https://zvlkzmolvghavahyztbs.supabase.co/functions/v1/generate-avatar`
-- **NFT mint tx (mainnet):** `402d7eab70c17d6839db3a9b42a07de939b956db328080feb817fd45629bac6d`
+- **ZK credential tx (mainnet, fresh flow):** `402d7eab70c17d6839db3a9b42a07de939b956db328080feb817fd45629bac6d`
+- **NFT mint tx (mainnet, Basic $10 USDC):** `0e69eb22298822d9a60f2ac59a8a8e9a48b8245af8a49d2ee5c53c820bdf10a3`
 
 ### 🚧 Next Steps
 1. ~~Upgrade `age_verifier` on testnet~~ ✅ done
