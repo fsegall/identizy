@@ -89,19 +89,33 @@ The system follows the **W3C Verifiable Credentials** trust model:
   - Initialize tx: `bd873fd77ead6eae54e6262833bf1560d21afa950f5562dcf0c7c581d51e9bef`
   - USDC testnet SAC: `CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA`
 
+### 2026-07-01 — Full End-to-End NFT Flow on Mainnet ✅
+- **Full flow verified at https://identizy.lovable.app:**
+  - ZK proof generated in browser (snarkjs WASM) ✅
+  - Issuer signs commitment via Supabase edge function ✅
+  - `age_verifier` v2 verifies Groth16 proof + Ed25519 sig on mainnet ✅
+  - AI avatar generated via fal.ai FLUX.1-schnell + pinned to IPFS via Pinata ✅
+  - `soulbound_nft` minted — Basic tier ($10 USDC forwarded directly to treasury) ✅
+  - "Discard Identity (Disposable ID)" burn flow available ✅
+  - Demo video recorded ✅
+- **Fixes applied:**
+  - `age_verifier` mainnet re-initialized (init tx `83b6f4a6...` — first attempt used BASE_FEE too low)
+  - Treasury USDC trustline added (tx `0e1396c1...`) — required to receive USDC fees
+  - tx timeout increased 30s → 300s in `soulboundNft.ts` + `stellar.ts` (prevent `txTooLate`)
+  - `VITE_GENERATE_AVATAR_URL` set to `https://zvlkzmolvghavahyztbs.supabase.co/functions/v1/generate-avatar`
+- **NFT mint tx (mainnet):** `402d7eab70c17d6839db3a9b42a07de939b956db328080feb817fd45629bac6d`
+
 ### 🚧 Next Steps
 1. ~~Upgrade `age_verifier` on testnet~~ ✅ done
 2. ~~Deploy + initialize `soulbound_nft` on testnet~~ ✅ done
-3. Frontend integration: NFT mint UI (tier Basic only), avatar prompt → fal.ai → IPFS, burn/re-mint flow
-   - `supabase/functions/generate-avatar/` implemented — needs FAL_API_KEY + PINATA_JWT as Supabase Secrets
-   - `frontend/src/services/soulboundNft.ts` implemented — needs VITE_SOULBOUND_NFT_CONTRACT_ID + VITE_GENERATE_AVATAR_URL in .env
-   - Dashboard.tsx needs NFT section added
-4. Deploy `generate-avatar` edge function to Supabase (via Lovable or `supabase functions deploy generate-avatar`)
+3. ~~Frontend integration: NFT mint UI~~ ✅ done
+4. ~~Deploy `generate-avatar` edge function~~ ✅ done
 5. ~~Mainnet v2 deploy~~ ✅ done
-   - `age_verifier` v2: `CDZ72A42NVDTTUMXHVGFCO7GXNIZKSGCRRLH7VEZ5HYXHUK4ZBYKYQWM` — deploy tx `46be15cd...`, init tx `d027efe9...`
-   - `soulbound_nft`: `CALENVG66JDNZEYEPMFLFKYZ5434XD5Y7TCOC5XIF74ZTJPSQASG5AIC` — deploy tx `7a7c940d...`, init tx `9f54ff08...`
+   - `age_verifier` v2: `CDZ72A42NVDTTUMXHVGFCO7GXNIZKSGCRRLH7VEZ5HYXHUK4ZBYKYQWM` — init tx `83b6f4a6335e1577aaa3190123c7490b61d0c1a05b9ac74be0e172c7d9a234b3`
+   - `soulbound_nft`: `CALENVG66JDNZEYEPMFLFKYZ5434XD5Y7TCOC5XIF74ZTJPSQASG5AIC`
    - USDC mainnet SAC: `CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75`
-6. Update Lovable env vars: `VITE_AGE_VERIFIER_CONTRACT_ID` → v2, `VITE_SOULBOUND_NFT_CONTRACT_ID` → mainnet
+6. ~~Update Lovable env vars~~ ✅ done
+7. (Optional) Burn + re-mint flow UI test — Disposable ID persona change
 
 ---
 

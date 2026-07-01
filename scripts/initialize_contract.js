@@ -196,7 +196,7 @@ async function main() {
   const contract = new Contract(CONTRACT_ID);
   const account  = await server.getAccount(keypair.publicKey());
 
-  const tx = new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase })
+  const tx = new TransactionBuilder(account, { fee: "10000000", networkPassphrase })
     .addOperation(contract.call(
       "initialize",
       buildStoredVk(vkJson),
@@ -206,7 +206,7 @@ async function main() {
       scAddress(usdcTok),
       scI128(0),
     ))
-    .setTimeout(30)
+    .setTimeout(300)
     .build();
 
   console.log("Simulating...");
@@ -225,8 +225,8 @@ async function main() {
 
   process.stdout.write("Waiting for confirmation");
   let getResult;
-  for (let i = 0; i < 12; i++) {
-    await new Promise((r) => setTimeout(r, 2000));
+  for (let i = 0; i < 40; i++) {
+    await new Promise((r) => setTimeout(r, 5000));
     process.stdout.write(".");
     getResult = await server.getTransaction(sendResult.hash);
     if (getResult.status !== "NOT_FOUND") break;
