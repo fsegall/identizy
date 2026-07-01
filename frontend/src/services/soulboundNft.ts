@@ -96,7 +96,7 @@ async function signAndSubmit(
 
   const tx = new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase: NETWORK_PASSPHRASE })
     .addOperation(operation)
-    .setTimeout(30)
+    .setTimeout(300)
     .build();
 
   const sim = await server.simulateTransaction(tx);

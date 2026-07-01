@@ -87,7 +87,7 @@ export async function verifyAgeOnChain(
         hexToScBytes(proofResult.issuerSig)
       )
     )
-    .setTimeout(30)
+    .setTimeout(300)
     .build();
 
   const sim = await server.simulateTransaction(tx);
