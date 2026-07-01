@@ -641,6 +641,7 @@ Internal design and security documents are in [`docs/`](docs/):
 
 | Document | Contents |
 |---|---|
+| [`docs/IDENTIZY_FLOW.md`](docs/IDENTIZY_FLOW.md) | Full end-to-end verification flow — KYC hosted session (documents never reach Identizy), Issuer signing, browser ZK proof generation, on-chain verification, third-party integration |
 | [`docs/monetization_plan.md`](docs/monetization_plan.md) | Revenue model, USDC fee system, treasury security layers (direct forwarding + 48h timelock + multisig), fee schedule |
 | [`docs/security_audit.md`](docs/security_audit.md) | Self-audit: 3 vulnerabilities fixed, 2 accepted risks, 5 liveness risk scenarios, conflict analysis, operational procedures |
 
