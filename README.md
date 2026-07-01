@@ -575,6 +575,8 @@ Connect Freighter wallet (testnet), enter a birthdate ≥ 18 years ago, click "G
 
 **Multi-attribute credentials:** Extend the circuit to support additional claims beyond age — nationality, accredited-investor status, proof of humanity — using the same W3C VC trust model.
 
+**Wallet abstraction (non-crypto onboarding):** Remove the Freighter requirement for mainstream users. The Stellar ecosystem has a [Passkey Kit](https://github.com/kalepail/passkey-kit) that creates custodial-free Stellar accounts using WebAuthn / device biometrics — no seed phrase, no browser extension, no "what is a wallet" explanation. A user would sign in with Face ID or fingerprint, get a Stellar account behind the scenes, and complete the full ZK credential flow without ever knowing they used a blockchain.
+
 ---
 
 ## Use Cases
