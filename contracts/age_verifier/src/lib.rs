@@ -65,7 +65,8 @@ pub enum DataKey {
     Vk,
     IssuerPubKey,
     Nullifier(BytesN<32>),
-    Credential(BytesN<32>),   // credential record keyed by address hash
+    Credential(BytesN<32>),   // credential record keyed by address hash (BN254 field element)
+    CredentialAddr(Address),  // secondary index by Address — used by soulbound_nft cross-contract call
     Admin,                    // Address — multisig; calls set_fee / set_treasury / upgrade
     Treasury,                 // Address — receives fees directly; rotatable via set_treasury()
     UsdcToken,                // Address — USDC SAC contract on this network
@@ -300,6 +301,11 @@ impl AgeVerifier {
         env.storage().persistent().set(&DataKey::Credential(address_hash_bytes.clone()), &true);
         env.storage().persistent().extend_ttl(&DataKey::Credential(address_hash_bytes), 17_280, 518_400);
 
+        // Secondary index by Address — allows soulbound_nft to verify credential
+        // without needing to recompute the BN254 field element from the address.
+        env.storage().persistent().set(&DataKey::CredentialAddr(caller.clone()), &true);
+        env.storage().persistent().extend_ttl(&DataKey::CredentialAddr(caller), 17_280, 518_400);
+
         env.events().publish(("identizy", "credential_verified"), true);
 
         Ok(true)
@@ -308,6 +314,12 @@ impl AgeVerifier {
     /// Check whether an address hash already has a verified credential.
     pub fn has_credential(env: Env, address_hash: BytesN<32>) -> bool {
         env.storage().persistent().has(&DataKey::Credential(address_hash))
+    }
+
+    /// Check credential by Stellar Address — used by soulbound_nft via cross-contract call.
+    /// Avoids requiring callers to recompute the BN254 field element from the address.
+    pub fn has_credential_by_address(env: Env, addr: Address) -> bool {
+        env.storage().persistent().has(&DataKey::CredentialAddr(addr))
     }
 
     /// Check whether a nullifier has been consumed.

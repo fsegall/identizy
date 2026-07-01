@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["contracts/age_verifier"]
+members = ["contracts/age_verifier", "contracts/soulbound_nft"]
 
 [profile.release]
 opt-level = "z"
