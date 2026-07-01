@@ -71,9 +71,29 @@ The system follows the **W3C Verifiable Credentials** trust model:
   - When ready: `stellar contract deploy --source alice --network mainnet --rpc-url https://soroban-rpc.creit.tech ...`
 - **Plans documented:** `docs/monetization_plan.md`, `docs/security_audit.md`
 
+### 2026-06-29–30 — Soulbound NFT Contract (Post-Submission)
+- **Hackathon submitted** ✅ on DoraHacks
+- **`age_verifier` v2 updated** — added `CredentialAddr(Address)` secondary index + `has_credential_by_address()` function, enabling cross-contract credential checks by Address
+- **`contracts/soulbound_nft/` implemented** — SEP-0041 identity token, 8/8 tests passing
+  - Tiers: Basic $10 / Premium $25 / Rare $100 (USDC, forwarded directly to treasury)
+  - Cross-contract call: `mint()` checks `has_credential_by_address` in `age_verifier`
+  - `burn()` + re-`mint()` = **Disposable ID** — change persona anytime, no re-KYC
+  - Transfer / approve / burn_from → always blocked (soulbound)
+  - Appears natively in Freighter + Lobstr wallets via SEP-0041 `balance()` interface
+- **`docs/monetization_plan.md`** updated — NFT tier fees now Live, not Roadmap
+- **`age_verifier` testnet upgraded** — `upgrade()` called on `CD3EWWEN...`, new WASM hash `c7d9241805d92ba2dc24cd1aadb7185fa3b499ba245ff1c0bf9870b7ea86659d`
+  - tx: `787404e181401d93a054a01d0c802fa1bc3174140745b05404c3818910c4146f`
+- **`soulbound_nft` deployed + initialized on testnet** — `CCIDPRSOBCUF5OEHD3C5EAH2WQTY6QIY3SSCCIJJ344DH6HAA7O4QLOC`
+  - Deploy tx (upload): `413b9aa03eafaeac2b8c9bab43fd6a41b8d9925506e6653ccd26518b4956de79`
+  - Deploy tx (instantiate): `5fdb5e67574e60251b40df22a504ce5a8536db34ad5cdbaa3fc8d371bdc082c2`
+  - Initialize tx: `bd873fd77ead6eae54e6262833bf1560d21afa950f5562dcf0c7c581d51e9bef`
+  - USDC testnet SAC: `CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA`
+
 ### 🚧 Next Steps
-1. Submit on DoraHacks with repo URL + video — June 29, 12:00 PM PST
-2. Mainnet v2 deploy when alice funded (~18 XLM to `GBZFUMBDCDL7FL5VLD2IG4AEVWM4RYNXLOCEXWP72E33TLEIOADJMHMQ`)
+1. Upgrade `age_verifier` on testnet — `upgrade(new_wasm_hash)` to activate `has_credential_by_address`
+2. Deploy + initialize `soulbound_nft` on testnet
+3. Frontend integration: NFT mint UI, tier selector, avatar picker, burn/re-mint flow
+4. Mainnet v2 deploy when alice funded (~18 XLM to `GBZFUMBDCDL7FL5VLD2IG4AEVWM4RYNXLOCEXWP72E33TLEIOADJMHMQ`)
 
 ---
 

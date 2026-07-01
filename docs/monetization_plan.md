@@ -28,16 +28,19 @@ Charged in **USDC** at the moment a user calls `verify()` to mint their credenti
 
 ---
 
-### 2. NFT Avatar Mint Fee (Roadmap)
+### 2. Identity NFT Mint Fee (Live — `soulbound_nft` contract implemented)
 
-When the credential is upgraded to a SEP-0041 soulbound token with a visual identity (avatar NFT), a separate one-time fee will be charged to associate an avatar with the credential.
+A SEP-0041 soulbound identity token with a visual persona (avatar). Minting requires an active credential from `age_verifier` (cross-contract call). One token per address; burn + re-mint enables free persona changes (Disposable ID).
 
-| Parameter | Value |
-|---|---|
-| Token | USDC |
-| Target fee | $1.00 USDC |
-| Frequency | Once per avatar assignment |
-| Transferable? | Avatar NFT can be transferable; credential remains soulbound |
+| Tier | Badge | Fee |
+|---|---|---|
+| 0 — Basic | Any avatar URI | $10.00 USDC |
+| 1 — Premium | Premium badge | $25.00 USDC |
+| 2 — Rare | Exclusive badge | $100.00 USDC |
+
+**Disposable ID:** `burn()` clears the token; `mint()` re-mints with a new avatar/tier. No re-KYC needed — the underlying ZK credential in `age_verifier` stays valid. Users can freely rotate their visible persona.
+
+**Token appears natively** in Freighter and Lobstr wallets, queryable via standard `balance()` interface, composable with any DeFi protocol on Stellar.
 
 ---
 
@@ -226,7 +229,7 @@ fn configure_fees(env: Env, admin, usdc_token, fee_amount) -> Result<(), Error>
 | Hackathon / launch | Deploy with fee = 0 | Free |
 | First 1,000 credentials | Keep free, measure adoption | Free |
 | Growth phase | Enable fee | $2.00 USDC |
-| Avatar NFT launch | Enable avatar fee | $1.00 USDC |
+| Identity NFT launch | Enable Basic/Premium/Rare tier fees | $10–$100 USDC |
 
 Fee changes: single `set_fee()` call by admin — no redeploy, no migration, instant effect.
 

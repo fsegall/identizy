@@ -25,15 +25,29 @@ A zero-knowledge identity system on Stellar that lets users verify any attribute
 | **First proof tx (June 24)** | https://stellar.expert/explorer/public/tx/0d8687d641401ed1bbc98df2cb6fab67c02abeb6bd5fa4762774afba3ac2b207 |
 | **Network** | Stellar Mainnet (Protocol 25 "X-Ray") |
 
-### Testnet
+### Testnet — `age_verifier`
 
 | | |
 |---|---|
 | **Contract v2** | `CD3EWWEN2BNYZDV3LFOZXRINAGZ4WQQ6JKVHQ3SEN7PWJGZVC6QVCIRT` |
 | **Explorer** | https://stellar.expert/explorer/testnet/contract/CD3EWWEN2BNYZDV3LFOZXRINAGZ4WQQ6JKVHQ3SEN7PWJGZVC6QVCIRT |
 | **Init tx** | https://stellar.expert/explorer/testnet/tx/e1fe740c8ea3e631285f247af260d0be7fb550b3d2155785a76a646b91df2b0e |
+| **Upgrade tx** | https://stellar.expert/explorer/testnet/tx/787404e181401d93a054a01d0c802fa1bc3174140745b05404c3818910c4146f |
+| **WASM hash (v2)** | `c7d9241805d92ba2dc24cd1aadb7185fa3b499ba245ff1c0bf9870b7ea86659d` |
 | **Contract v1** | `CBY4RHLTT6CWB5K7M6IEMCI2BUVWAYAHOUS2XUG5HH2PDMDM77FIWFER` (legacy) |
 | **Proof tx (v1)** | https://stellar.expert/explorer/testnet/tx/c4db0d131a3d4a416087c6e0571f7cd0724be32e49f70feae8e295969e9bce76 |
+| **Network** | Stellar Testnet (Protocol 25 "X-Ray") |
+
+### Testnet — `soulbound_nft`
+
+| | |
+|---|---|
+| **Contract** | `CCIDPRSOBCUF5OEHD3C5EAH2WQTY6QIY3SSCCIJJ344DH6HAA7O4QLOC` |
+| **Explorer** | https://stellar.expert/explorer/testnet/contract/CCIDPRSOBCUF5OEHD3C5EAH2WQTY6QIY3SSCCIJJ344DH6HAA7O4QLOC |
+| **Deploy tx** | https://stellar.expert/explorer/testnet/tx/5fdb5e67574e60251b40df22a504ce5a8536db34ad5cdbaa3fc8d371bdc082c2 |
+| **Init tx** | https://stellar.expert/explorer/testnet/tx/bd873fd77ead6eae54e6262833bf1560d21afa950f5562dcf0c7c581d51e9bef |
+| **WASM hash** | `0698612e5e88ff06583318777d4026698ce809e1251392915b1e4757e8f157c1` |
+| **USDC testnet SAC** | `CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA` |
 | **Network** | Stellar Testnet (Protocol 25 "X-Ray") |
 
 **What the proof transaction shows on-chain:**
@@ -69,7 +83,7 @@ The credential is:
 - **Privacy-preserving** — the on-chain token contains zero personal information
 - **Issuer-anchored** — only signed attestations from licensed providers generate valid proofs; you can't fake it with false data
 
-**Coming next — Identity NFT:** The credential gains a face. You choose a visual persona — an avatar that represents you across every service without revealing who you are. Think of it as a disposable identity card: government-verified on the inside, anonymous on the outside, uniquely yours. Implemented as a SEP-0041 soulbound token, it appears natively in Freighter and Lobstr wallets, composable with any DeFi protocol on Stellar, and queryable via a standard `balance()` interface by any verifier.
+**Identity NFT — Disposable ID:** The credential gains a face. After verifying, you mint a SEP-0041 soulbound token and choose a visual persona — an avatar that represents you across every service without revealing who you are. The token is non-transferable but intentionally disposable: burn it and mint a new one anytime you want a fresh persona, without going through KYC again. Your real identity stays locked in the ZK proof; the face you show the world is yours to change. The token appears natively in Freighter and Lobstr wallets, composable with any DeFi protocol on Stellar, and queryable via a standard `balance()` interface by any verifier.
 
 ---
 
@@ -314,7 +328,55 @@ fn get_pending_withdrawal(env: Env) -> Option<PendingWithdrawalData>
 
 // Admin — in-place WASM upgrade (same contract ID, storage preserved)
 fn upgrade(env: Env, new_wasm_hash: BytesN<32>) -> Result<(), Error>
+
+// Secondary index (queried by soulbound_nft cross-contract call)
+fn has_credential_by_address(env: Env, addr: Address) -> bool
 ```
+
+### Soulbound NFT Interface (`contracts/soulbound_nft/src/lib.rs`)
+
+SEP-0041 identity token. Requires a verified credential in `age_verifier` to mint.
+
+```rust
+// Initialize once after deploy
+fn initialize(
+    env: Env,
+    age_verifier: Address,   // age_verifier contract address on this network
+    admin: Address,
+    treasury: Address,       // receives tier fees in USDC
+    usdc_token: Address,     // USDC SAC contract address
+) -> Result<(), Error>
+
+// Mint a soulbound identity NFT — one per address, requires verified credential
+// Tier fees forwarded directly to treasury (contract never holds USDC):
+//   0 = Basic   → $10.00 USDC  (any avatar URI)
+//   1 = Premium → $25.00 USDC  (premium badge)
+//   2 = Rare    → $100.00 USDC (exclusive badge)
+fn mint(env: Env, to: Address, tier: u32, avatar_uri: String) -> Result<(), Error>
+
+// Update avatar URI without re-minting — free, holder only
+fn set_avatar(env: Env, holder: Address, avatar_uri: String) -> Result<(), Error>
+
+// Burn (revoke) the token — clears all state, enables Disposable ID re-mint
+fn burn(env: Env, from: Address, amount: i128) -> Result<(), Error>
+
+// Metadata queries
+fn token_uri(env: Env, id: Address) -> Option<String>
+fn token_tier(env: Env, id: Address) -> Option<u32>
+
+// SEP-0041 interface (standard balance/metadata — transfer blocked: soulbound)
+fn balance(env: Env, id: Address) -> i128       // 1 if holds token, 0 otherwise
+fn decimals(env: Env) -> u32                    // always 0
+fn name(env: Env) -> String                     // "Identizy Identity"
+fn symbol(env: Env) -> String                   // "IDZ"
+fn allowance(env: Env, from: Address, spender: Address) -> i128   // always 0
+fn transfer(...)        -> Error::NonTransferable
+fn transfer_from(...)   -> Error::NonTransferable
+fn approve(...)         -> Error::NonTransferable
+fn burn_from(...)       -> Error::NonTransferable
+```
+
+**Disposable ID:** `burn()` + `mint()` lets a user discard their persona and generate a new one any time — without re-doing KYC. The ZK credential in `age_verifier` stays valid; only the visible NFT persona is replaced.
 
 ### Key Bug Fixes During Development
 
@@ -349,8 +411,14 @@ ZK_Stellar/
 ├── contracts/age_verifier/
 │   ├── Cargo.toml                      # soroban-sdk =25.1.0 (pinned)
 │   └── src/
-│       ├── lib.rs                      # ✅ Groth16 verifier + Ed25519 + nullifiers
+│       ├── lib.rs                      # ✅ Groth16 verifier + Ed25519 + nullifiers + CredentialAddr index
 │       └── test.rs                     # ✅ 3/3 tests passing
+│
+├── contracts/soulbound_nft/
+│   ├── Cargo.toml
+│   └── src/
+│       ├── lib.rs                      # ✅ SEP-0041 soulbound NFT — mint/burn/set_avatar
+│       └── test.rs                     # ✅ 8/8 tests passing
 │
 ├── scripts/
 │   ├── address_to_field.js             # ✅ Stellar G-addr → BN254 field element
