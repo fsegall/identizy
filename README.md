@@ -578,6 +578,8 @@ Connect Freighter wallet (testnet), enter a birthdate ≥ 18 years ago, click "G
 
 ### 📋 Roadmap
 
+**Issuer key rotation (`update_issuer_key`):** Add an admin-only function to rotate the Issuer Ed25519 public key without redeploying the contract. If the signing key is compromised, the admin (2-of-3 multisig) can update it in a single transaction — the contract ID stays the same, existing credentials remain valid, and no new fraudulent credentials can be minted with the old key. Delivered as a WASM upgrade via the existing `upgrade()` function, not a new contract address.
+
 **In-circuit EdDSA (Option B):** Move the Issuer signature verification inside the ZK circuit to eliminate the Ed25519 check in the contract (~+3,000 constraints, needs powersOfTau17).
 
 **Production KYC:** Integrate a real document-verification provider (Jumio / Onfido) for the Issuer flow, and commission a formal circuit + contract audit.
