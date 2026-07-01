@@ -97,7 +97,11 @@ The system follows the **W3C Verifiable Credentials** trust model:
    - `frontend/src/services/soulboundNft.ts` implemented — needs VITE_SOULBOUND_NFT_CONTRACT_ID + VITE_GENERATE_AVATAR_URL in .env
    - Dashboard.tsx needs NFT section added
 4. Deploy `generate-avatar` edge function to Supabase (via Lovable or `supabase functions deploy generate-avatar`)
-5. Mainnet v2 deploy when alice funded (~18 XLM to `GBZFUMBDCDL7FL5VLD2IG4AEVWM4RYNXLOCEXWP72E33TLEIOADJMHMQ`)
+5. ~~Mainnet v2 deploy~~ ✅ done
+   - `age_verifier` v2: `CDZ72A42NVDTTUMXHVGFCO7GXNIZKSGCRRLH7VEZ5HYXHUK4ZBYKYQWM` — deploy tx `46be15cd...`, init tx `d027efe9...`
+   - `soulbound_nft`: `CALENVG66JDNZEYEPMFLFKYZ5434XD5Y7TCOC5XIF74ZTJPSQASG5AIC` — deploy tx `7a7c940d...`, init tx `9f54ff08...`
+   - USDC mainnet SAC: `CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75`
+6. Update Lovable env vars: `VITE_AGE_VERIFIER_CONTRACT_ID` → v2, `VITE_SOULBOUND_NFT_CONTRACT_ID` → mainnet
 
 ---
 

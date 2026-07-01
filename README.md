@@ -14,12 +14,35 @@ A zero-knowledge identity system on Stellar that lets users verify any attribute
 
 **Try it:** https://identizy.lovable.app
 
-### Mainnet (Public Network)
+### Mainnet — `age_verifier` v2 (current)
 
 | | |
 |---|---|
 | **App** | https://identizy.lovable.app |
-| **Contract** | `CBPG3KIS6NEGWANQFEKWKFYFENECUWG4KLJZ7KN25SCPKODHFO33MMTY` (v1) · v2 deploy in progress |
+| **Contract v2** | `CDZ72A42NVDTTUMXHVGFCO7GXNIZKSGCRRLH7VEZ5HYXHUK4ZBYKYQWM` |
+| **Explorer** | https://stellar.expert/explorer/public/contract/CDZ72A42NVDTTUMXHVGFCO7GXNIZKSGCRRLH7VEZ5HYXHUK4ZBYKYQWM |
+| **Deploy tx** | https://stellar.expert/explorer/public/tx/46be15cd6fecfa2f742d78e3c04237c441fe709ec58eedea9868fd8a4d8fb734 |
+| **Init tx** | https://stellar.expert/explorer/public/tx/d027efe966a6c96f88d8894fb7351c05135e784425299ccdcc3c197f7d8a79c8 |
+| **WASM hash** | `c7d9241805d92ba2dc24cd1aadb7185fa3b499ba245ff1c0bf9870b7ea86659d` |
+| **Network** | Stellar Mainnet (Protocol 25 "X-Ray") |
+
+### Mainnet — `soulbound_nft` (current)
+
+| | |
+|---|---|
+| **Contract** | `CALENVG66JDNZEYEPMFLFKYZ5434XD5Y7TCOC5XIF74ZTJPSQASG5AIC` |
+| **Explorer** | https://stellar.expert/explorer/public/contract/CALENVG66JDNZEYEPMFLFKYZ5434XD5Y7TCOC5XIF74ZTJPSQASG5AIC |
+| **Deploy tx** | https://stellar.expert/explorer/public/tx/7a7c940d14369303bda5eef6dab7e8385d1cf0a6c22774427475f2c8c0b37e75 |
+| **Init tx** | https://stellar.expert/explorer/public/tx/9f54ff08d530f63c3ab8ba80c4bb5a1051e77828001cda05be8d22cd7c3d2ef3 |
+| **WASM hash** | `0698612e5e88ff06583318777d4026698ce809e1251392915b1e4757e8f157c1` |
+| **USDC mainnet SAC** | `CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75` |
+| **Network** | Stellar Mainnet (Protocol 25 "X-Ray") |
+
+### Mainnet — `age_verifier` v1 (legacy / hackathon submission)
+
+| | |
+|---|---|
+| **Contract v1** | `CBPG3KIS6NEGWANQFEKWKFYFENECUWG4KLJZ7KN25SCPKODHFO33MMTY` |
 | **Explorer** | https://stellar.expert/explorer/public/contract/CBPG3KIS6NEGWANQFEKWKFYFENECUWG4KLJZ7KN25SCPKODHFO33MMTY |
 | **Production tx (June 27)** | https://stellar.expert/explorer/public/tx/91c3a617620fb76e02197ca4cbe053fd4c5d9527eaa2562cdf593d677370d591 |
 | **First proof tx (June 24)** | https://stellar.expert/explorer/public/tx/0d8687d641401ed1bbc98df2cb6fab67c02abeb6bd5fa4762774afba3ac2b207 |
